@@ -12,17 +12,19 @@
 
 #include "main.h"
 #include "usart.h"
-//#include "debug.h"
+#include "i2c.h"
 #include "cmd.h"
 //#include "peripheral.h"
 
 #include "adc.h"
-#include "spi.h"
+//#include "spi.h"
 #include "tim.h"
 #include "TestMy.h"
 //#include "can.h"
+#include "ntc.h"
+#include "eeprom.h"
 
-//#include "gpio.h"
+#include "hand1.h"
 
 
 
