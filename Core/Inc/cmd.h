@@ -60,6 +60,8 @@ void Uart_Init();
 
 
 extern UART_T m_uart1;
+extern UART_T m_uart2;
+
 
 /*  			extern end  			*/
 

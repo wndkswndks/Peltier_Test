@@ -25,15 +25,17 @@ typedef enum
 	CMD_HP1_ADD = 200,
 
 	CMD_HP1_CART_ID  = 35,
-	CMD_HP1_MANUFAC_YY,
-	CMD_HP1_MANUFAC_MMDD,
-	CMD_HP1_ISSUED_YY,
-	CMD_HP1_ISSUED_MMDD,
-	CMD_HP1_REMIND_SHOT,
-	CMD_HP1_DAY_REQ,
-	CMD_HP1_WATT_REQ,
-	CMD_HP1_FRQ_REQ,
-	CMD_HP1_CATRIDGE_STATUS,
+	CMD_HP1_MANUFAC_YY  = 36,
+	CMD_HP1_MANUFAC_MM  = 37,
+	CMD_HP1_MANUFAC_DD  = 38,
+	CMD_HP1_ISSUED_YY  = 39,
+	CMD_HP1_ISSUED_MM  = 40,
+	CMD_HP1_ISSUED_DD  = 41,
+	CMD_HP1_REMIND_SHOT  = 42,
+	CMD_HP1_DAY_REQ  = 43,
+	CMD_HP1_WATT_REQ  = 44,
+	CMD_HP1_FRQ_REQ  = 45,
+	CMD_HP1_CATRIDGE_STATUS  = 46,
 
 	CMD_TRANDU_FRQ_BASE = 90,//LCD_TX, MAIN_TX, LCD_REQ//~~~
 	CMD_TRANDU1_FRQ = 91,
@@ -155,16 +157,19 @@ typedef struct
 {
 	uint8_t catridgeId;
 	uint16_t manufacYY;
-	uint16_t manufacMMDD;
+	uint16_t manufacMM;
+	uint16_t manufacDD;
 	uint16_t issuedYY;
-	uint16_t issuedMMDD;
+	uint16_t issuedMM;
+	uint16_t issuedDD;
 	uint16_t rfFrqBuff[8];
-	uint16_t rfWattBuff[8][12];
+	uint16_t rfWattBuff[78];
 	uint16_t remainingShotNum;
 	uint8_t catridgeStatus;
 	uint8_t step;
 	uint8_t mode;
 	uint8_t pwmDuty;
+	uint8_t flashFirst;
 } HD1_T;
 
 /*  			stuct end  				*/
@@ -174,8 +179,8 @@ typedef struct
 /*  			function start  		*/
 void HP1_Temp_Duty_Ctrl();
 void UartRx1DataProcess();
-void Main_Tx_4Data(int cmd, int indData1, int indData2, int indData3, int indData4);
-void Main_Tx_1Data(int cmd, int indData);
+void Main_Tx_4Data(int cmd, int data1, int data2, int data3, int data4);
+void Main_Tx_1Data(int cmd, int data);
 
 void HP1_Cmd_Config();
 

@@ -55,16 +55,16 @@ HAL_StatusTypeDef CAT24C16_ReadByte(I2C_HandleTypeDef *hi2c, uint16_t abs_addr, 
 uint8_t bufQQ[255] = {0};
 void eeprom_test(void)
 {
-//    // 1) 0x000 ~ 0x00A에 패턴 기록
-//    for (uint16_t i = 0; i <= 250; ++i)
-//    {
-//        uint8_t w = i;  // 임의 패턴
-//        if (CAT24C16_WriteByte(&hi2c1, i, w) != HAL_OK)
-//        {
-//            // 에러 처리
-//            return;
-//        }
-//    }
+    // 1) 0x000 ~ 0x00A에 패턴 기록
+    for (uint16_t i = 0; i <= 250; ++i)
+    {
+        uint8_t w = i;  // 임의 패턴
+        if (CAT24C16_WriteByte(&hi2c1, i, w) != HAL_OK)
+        {
+            // 에러 처리
+            return;
+        }
+    }
 
     // 2) 같은 구간 읽기
     for (int i = 0; i <= 250; ++i)
@@ -79,18 +79,61 @@ void eeprom_test(void)
 
 }
 
-
+int ddQ;
 void Eeprom_All_Read(void)
 {
     // 2) 같은 구간 읽기
-    for (int i = 0; i <= 250; ++i)
+    for (int i = 0; i <= 200; ++i)
     {
-        if (CAT24C16_ReadByte(&hi2c1, i, &bufQQ[i]) != HAL_OK)
+        if (CAT24C16_ReadByte(&hi2c1, i, &m_eep.buff[i]) != HAL_OK)
         {
             // 에러 처리
-            return;
+            ddQ++;
+//            return;
         }
     }
+	ddQ += 1;
+
+	if(m_eep.buff[IDX_HP1_IS_FLASH_FIRST] != FLASHA_FIRST_FLAG)
+	{
+		m_hd1.flashFirst = FLASHA_FIRST_FLAG;
+		Eeprom_Byte_Write(IDX_HP1_IS_FLASH_FIRST, m_hd1.flashFirst);
+
+	    for (uint16_t i = 1; i < 200; ++i)
+	    {
+	        if (CAT24C16_WriteByte(&hi2c1,i, 0) != HAL_OK)
+	        {
+	            // 에러 처리
+	            return;
+	        }
+	    }
+	ddQ += 20;
+
+	}
+	else
+	{
+		m_hd1.flashFirst = FLASHA_COMPLITE_FLAG;
+		m_hd1.catridgeId = m_eep.buff[IDX_HP1_CART_ID_START];
+		m_hd1.manufacYY = m_eep.buff[IDX_HP1_MANUFAC_YY_START];
+		m_hd1.manufacMM = m_eep.buff[IDX_HP1_MANUFAC_MM_START];
+		m_hd1.manufacDD = m_eep.buff[IDX_HP1_MANUFAC_DD_START];
+		m_hd1.issuedYY = m_eep.buff[IDX_HP1_ISSUED_YY_START];
+		m_hd1.issuedMM = m_eep.buff[IDX_HP1_ISSUED_MM_START];
+		m_hd1.issuedDD = m_eep.buff[IDX_HP1_ISSUED_DD_START];
+		for(int i =0 ;i < 7; i++)
+		{
+			m_hd1.rfFrqBuff[i+1] = m_eep.buff[i*2+IDX_HP1_FRQ_BUFF_START]<<8|m_eep.buff[i*2+1+IDX_HP1_FRQ_BUFF_START];
+		}
+		for(int i =0 ;i < 77; i++)
+		{
+			m_hd1.rfWattBuff[i+1] = m_eep.buff[i*2+IDX_HP1_WATT_BUFF_START]<<8|m_eep.buff[i*2+1+IDX_HP1_WATT_BUFF_START];
+		}
+		m_hd1.remainingShotNum = m_eep.buff[IDX_HP1_REMIND_SHOT_START]<<8|m_eep.buff[IDX_HP1_REMIND_SHOT_END];
+		m_hd1.catridgeStatus = m_eep.buff[IDX_CATRIDGE_STATUS_START];
+	ddQ += 10;
+	}
+
+	ddQ += 100;
 
 
 }
@@ -109,6 +152,10 @@ void Eeprom_All_Save(void)
 	            return;
 	        }
 	    }
+
+
+
+
 	}
 }
 void Eeprom_Byte_Write(uint8_t Idx, uint8_t data)

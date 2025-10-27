@@ -307,7 +307,6 @@ void PID_OnOfff_Config()
 					targetTemp = 7;
 					PIDEn = 0;
 					Pwm_DutySet_Tim1_CH4(0);
-					printf("\r\n");
 				}
 			}
 
@@ -402,13 +401,15 @@ void Test_While()
 {
 
 
-#if 1
+#if 0
+//	TxTest();
+
 	Force_Duty();
-	NTC_TempWhile();
 	if(PIDEn)PID_OnOfff_Config2();
 #else
+	NTC_TempWhile();
 	HP1_Temp_Duty_Ctrl();
-	HP1_Cmd_Config();
+//	HP1_Cmd_Config();
 	UartRxDataProcess();
 
 #endif

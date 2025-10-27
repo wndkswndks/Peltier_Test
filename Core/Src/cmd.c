@@ -14,6 +14,7 @@ uint8_t Rx_data3[1];
 void Uart_Init()
 {
 	HAL_UART_Receive_IT(&huart1, Rx_data1, 1);
+	HAL_UART_Receive_IT(&huart2, Rx_data2, 1);
 }
 
 
@@ -76,11 +77,6 @@ void Rx_BuffClear(UART_T *uart)
 
 
 
-
-void UartRx2DataProcess()
-{
-
-}
 void UartRx3DataProcess()
 {
 
@@ -89,6 +85,7 @@ void UartRx3DataProcess()
 void UartRxDataProcess()
 {
 	UartRx1DataProcess();
+	UartRx2DataProcess();//
 }
 
 
@@ -121,7 +118,7 @@ void Uart_PassingConfig(UART_T* uart, uint8_t data, char startChar, char endChar
 	if(Uart_RxBuff_Get(uart, data, startChar, endChar))
 	{
 //		Uart1_Passing(uart->rxBuff);
-		if(uart==&m_uart1)Uart_Passing(uart, uart->rxBuff);
+		Uart_Passing(uart, uart->rxBuff);
 	}
 }
 
@@ -134,7 +131,7 @@ void TxTest()
 	{
 		timeStamp = HAL_GetTick();
 //		printf("time %u \r\n",HAL_GetTick());
-		HAL_UART_Transmit(&huart1, "hello", 5,100);
+		HAL_UART_Transmit(&huart2, "hello", 5,100);
 
 
 	}
@@ -165,6 +162,13 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		HAL_UART_Receive_IT(&huart1, Rx_data1, 1);
 		Uart_RxBuff_View(&m_uart1, Rx_data1[0]);
 	 	Uart_PassingConfig(&m_uart1, Rx_data1[0],'[', ']');
+
+	 }
+	 else if(huart == &huart2)
+	 {
+		HAL_UART_Receive_IT(&huart2, Rx_data2, 1);
+		Uart_RxBuff_View(&m_uart2, Rx_data2[0]);
+	 	Uart_PassingConfig(&m_uart2, Rx_data2[0],'[', ']');
 
 	 }
 }

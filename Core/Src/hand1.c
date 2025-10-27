@@ -10,14 +10,20 @@
 HD1_T m_hd1;
 extern uint32_t adcChNum,adcChBuff[10];
 
-void Main_Tx_4Data(int cmd, int indData1, int indData2, int indData3, int indData4)
+void Main_Tx_4Data(int cmd, int data1, int data2, int data3, int data4)
 {
-	printf("[%d,%d,%d,%d,%d]\r\n",cmd, indData1, indData2, indData3, indData4);
+	uint8_t len;
+	uint8_t str[40];
+	len = sprintf(str,"[%d,%d,%d,%d,%d]\r\n",cmd, data1, data2, data3, data4);
+	HAL_UART_Transmit(&huart2,str,len,100);
 }
 
-void Main_Tx_1Data(int cmd, int indData)
+void Main_Tx_1Data(int cmd, int data)
 {
-	printf("[%d,%d]\r\n",cmd, indData);
+	uint8_t len;
+	uint8_t str[40];
+	len = sprintf(str,"[%d,%d]\r\n",cmd, data);
+	HAL_UART_Transmit(&huart2,str,len,100);
 }
 
 void HP1_Cmd_Config()
@@ -33,11 +39,25 @@ void HP1_Cmd_Config()
 	}
 }
 
-
 void UartRx1DataProcess()
 {
 	int rxCmd = m_uart1.rxCmdAdd;
 	int rxData = m_uart1.rxCmdData;
+	int rxCmdIdx;
+	uint16_t valueTd, valueWatt;
+	if(rxCmd !=0)
+	{
+
+		m_uart2.rxCmdAdd = 0;
+		m_uart2.rxCmdData = 0;
+	}
+
+}
+
+void UartRx2DataProcess()
+{
+	int rxCmd = m_uart2.rxCmdAdd;
+	int rxData = m_uart2.rxCmdData;
 	int rxCmdIdx;
 	uint16_t valueTd, valueWatt;
 	if(rxCmd !=0)
@@ -75,26 +95,32 @@ void UartRx1DataProcess()
 
 			case CMD_HP1_MANUFAC_YY:
 				m_hd1.manufacYY = rxData;
-				Eeprom_Word_Write(IDX_HP1_MANUFAC_YY_START, rxData);
+				Eeprom_Byte_Write(IDX_HP1_MANUFAC_YY_START, rxData);
 			break;
 
-			case CMD_HP1_MANUFAC_MMDD:
-				m_hd1.manufacMMDD = rxData;
-				Eeprom_Word_Write(IDX_HP1_MANUFAC_MMDD_START, rxData);
+			case CMD_HP1_MANUFAC_MM:
+				m_hd1.manufacMM = rxData;
+				Eeprom_Byte_Write(IDX_HP1_MANUFAC_MM_START, rxData);
+			break;
+
+			case CMD_HP1_MANUFAC_DD:
+				m_hd1.manufacDD = rxData;
+				Eeprom_Byte_Write(IDX_HP1_MANUFAC_DD_START, rxData);
 			break;
 
 			case CMD_HP1_ISSUED_YY:
 				m_hd1.issuedYY = rxData;
-				Eeprom_Word_Write(IDX_HP1_ISSUED_YY_START, rxData);
+				Eeprom_Byte_Write(IDX_HP1_ISSUED_YY_START, rxData);
 			break;
 
-			case CMD_HP1_ISSUED_MMDD:
-				m_hd1.issuedMMDD = rxData;
-				Eeprom_Word_Write(IDX_HP1_ISSUED_MMDD_START, rxData);
+			case CMD_HP1_ISSUED_MM:
+				m_hd1.issuedMM = rxData;
+				Eeprom_Byte_Write(IDX_HP1_ISSUED_MM_START, rxData);
 			break;
 
-			case CMD_HP1_DAY_REQ:
-				Main_Tx_4Data(CMD_HP1_DAY_REQ, m_hd1.manufacYY, m_hd1.manufacMMDD, m_hd1.issuedYY, m_hd1.issuedMMDD);
+			case CMD_HP1_ISSUED_DD:
+				m_hd1.issuedDD = rxData;
+				Eeprom_Byte_Write(IDX_HP1_ISSUED_DD_START, rxData);
 			break;
 
 			case CMD_HP1_REMIND_SHOT:
@@ -107,6 +133,32 @@ void UartRx1DataProcess()
 					m_hd1.remainingShotNum = rxData;
 					Eeprom_Word_Write(IDX_HP1_REMIND_SHOT_START, rxData);
 
+				}
+			break;
+
+			case CMD_HP1_DAY_REQ:
+				Main_Tx_1Data(CMD_HP1_MANUFAC_YY, m_hd1.manufacYY);
+				Main_Tx_1Data(CMD_HP1_MANUFAC_MM, m_hd1.manufacMM);
+				Main_Tx_1Data(CMD_HP1_MANUFAC_DD, m_hd1.manufacDD);
+
+				Main_Tx_1Data(CMD_HP1_ISSUED_YY, m_hd1.issuedYY);
+				Main_Tx_1Data(CMD_HP1_ISSUED_MM, m_hd1.issuedMM);
+				Main_Tx_1Data(CMD_HP1_ISSUED_DD, m_hd1.issuedDD);
+			break;
+
+			case CMD_HP1_WATT_REQ:
+				for(int i =1 ;i <= 77;i++)
+				{
+					Main_Tx_1Data(i+CMD_TRANDU_WATT_BASE, m_hd1.rfWattBuff[i]);
+					//HAL_Delay(10);
+				}
+			break;
+
+			case CMD_HP1_FRQ_REQ:
+				for(int i =1 ;i <= 7;i++)
+				{
+					Main_Tx_1Data(i+CMD_TRANDU_FRQ_BASE, m_hd1.rfFrqBuff[i]);
+					//HAL_Delay(20);
 				}
 			break;
 
@@ -123,21 +175,7 @@ void UartRx1DataProcess()
 
 				}
 			break;
-			case CMD_HP1_FRQ_REQ:
-				for(int i =1 ;i <= 7;i++)
-				{
-					Main_Tx_1Data(i+CMD_TRANDU_FRQ_BASE, m_hd1.rfFrqBuff[i]);
-					//HAL_Delay(20);
-				}
-			break;
 
-			case CMD_HP1_WATT_REQ:
-				for(int i =1 ;i <= 77;i++)
-				{
-					Main_Tx_1Data(i+CMD_TRANDU_WATT_BASE, m_hd1.rfWattBuff[i]);
-					//HAL_Delay(10);
-				}
-			break;
 
 			default:
 				if(CMD_TRANDU1_FRQ <= rxCmd && rxCmd <=CMD_TRANDU7_FRQ)
@@ -147,12 +185,11 @@ void UartRx1DataProcess()
 					Eeprom_Word_Write(rxCmdIdx, rxData);
 
 				}
-				else if(CMD_TRANDU1_WATT10 <= rxCmd && rxCmd <CMD_TRANDU7_WATT005)
+				else if(CMD_TRANDU1_WATT10 <= rxCmd && rxCmd <=CMD_TRANDU7_WATT005)
 				{
-					valueTd = (rxCmd -CMD_TRANDU_WATT_BASE -1)/11 +1;
-					valueWatt = (rxCmd -CMD_TRANDU_WATT_BASE -1)%11 +1;
-					m_hd1.rfWattBuff[valueTd][valueWatt] = rxData;
-					rxCmdIdx = (rxCmd-CMD_TRANDU_WATT_BASE)+22;
+					valueTd = rxCmd -CMD_TRANDU_WATT_BASE;
+					m_hd1.rfWattBuff[valueTd] = rxData;
+					rxCmdIdx = (rxCmd-CMD_TRANDU_WATT_BASE-1)*2+IDX_HP1_WATT_BUFF_START;
 					Eeprom_Word_Write(rxCmdIdx, rxData);
 				}
 
@@ -161,8 +198,8 @@ void UartRx1DataProcess()
 
 		}
 
-		m_uart1.rxCmdAdd = 0;
-		m_uart1.rxCmdData = 0;
+		m_uart2.rxCmdAdd = 0;
+		m_uart2.rxCmdData = 0;
 	}
 }
 
