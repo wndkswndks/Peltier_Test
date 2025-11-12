@@ -23,7 +23,8 @@
 typedef enum
 {
 	CMD_HP1_ADD = 200,
-
+	CMD_HP1_REMIND_SHOT  = 7,
+	CMD_HP1_TEST_IO = 10,
 	CMD_HP1_CART_ID  = 35,
 	CMD_HP1_MANUFAC_YY  = 36,
 	CMD_HP1_MANUFAC_MM  = 37,
@@ -31,11 +32,14 @@ typedef enum
 	CMD_HP1_ISSUED_YY  = 39,
 	CMD_HP1_ISSUED_MM  = 40,
 	CMD_HP1_ISSUED_DD  = 41,
-	CMD_HP1_REMIND_SHOT  = 42,
+	CMD_HP1_DUMY1  = 42,
 	CMD_HP1_DAY_REQ  = 43,
 	CMD_HP1_WATT_REQ  = 44,
 	CMD_HP1_FRQ_REQ  = 45,
 	CMD_HP1_CATRIDGE_STATUS  = 46,
+	CMD_HP1_CATRIDGE_EVENT= 47,
+
+	CMD_HP1_DOYOU_LIVE = 70,
 
 	CMD_TRANDU_FRQ_BASE = 90,//LCD_TX, MAIN_TX, LCD_REQ//~~~
 	CMD_TRANDU1_FRQ = 91,
@@ -146,6 +150,12 @@ typedef enum
 	CMD_HP1_COOL_OFF = 3,
 
 	REQ_DATA = 0xffff,
+
+	CATRIGE_UN_DETECT = 0,
+	CATRIGE_DETECT = 1,
+
+	DEBUG_RX = 0,
+	DEBUG_TX = 1,
 } HD1_DATA;
 
 /*  			enum end  				*/
@@ -170,6 +180,9 @@ typedef struct
 	uint8_t mode;
 	uint8_t pwmDuty;
 	uint8_t flashFirst;
+	uint8_t catridgeDetect;
+	uint8_t catridgeAcction;
+
 } HD1_T;
 
 /*  			stuct end  				*/
@@ -183,6 +196,7 @@ void Main_Tx_4Data(int cmd, int data1, int data2, int data3, int data4);
 void Main_Tx_1Data(int cmd, int data);
 
 void HP1_Cmd_Config();
+void Debug_MAIN_Printf(uint8_t rxtx, uint8_t cmd, uint16_t data);
 
 
 /*  			function end  			*/

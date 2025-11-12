@@ -56,15 +56,15 @@ uint8_t bufQQ[255] = {0};
 void eeprom_test(void)
 {
     // 1) 0x000 ~ 0x00A에 패턴 기록
-    for (uint16_t i = 0; i <= 250; ++i)
-    {
-        uint8_t w = i;  // 임의 패턴
-        if (CAT24C16_WriteByte(&hi2c1, i, w) != HAL_OK)
-        {
-            // 에러 처리
-            return;
-        }
-    }
+//    for (uint16_t i = 0; i <= 250; ++i)
+//    {
+//        uint8_t w = i;  // 임의 패턴
+//        if (CAT24C16_WriteByte(&hi2c1, i, w) != HAL_OK)
+//        {
+//            // 에러 처리
+//            return;
+//        }
+//    }
 
     // 2) 같은 구간 읽기
     for (int i = 0; i <= 250; ++i)
@@ -79,7 +79,6 @@ void eeprom_test(void)
 
 }
 
-int ddQ;
 void Eeprom_All_Read(void)
 {
     // 2) 같은 구간 읽기
@@ -88,11 +87,9 @@ void Eeprom_All_Read(void)
         if (CAT24C16_ReadByte(&hi2c1, i, &m_eep.buff[i]) != HAL_OK)
         {
             // 에러 처리
-            ddQ++;
-//            return;
+            return;
         }
     }
-	ddQ += 1;
 
 	if(m_eep.buff[IDX_HP1_IS_FLASH_FIRST] != FLASHA_FIRST_FLAG)
 	{
@@ -107,7 +104,6 @@ void Eeprom_All_Read(void)
 	            return;
 	        }
 	    }
-	ddQ += 20;
 
 	}
 	else
@@ -130,10 +126,8 @@ void Eeprom_All_Read(void)
 		}
 		m_hd1.remainingShotNum = m_eep.buff[IDX_HP1_REMIND_SHOT_START]<<8|m_eep.buff[IDX_HP1_REMIND_SHOT_END];
 		m_hd1.catridgeStatus = m_eep.buff[IDX_CATRIDGE_STATUS_START];
-	ddQ += 10;
 	}
 
-	ddQ += 100;
 
 
 }

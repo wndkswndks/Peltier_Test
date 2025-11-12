@@ -394,7 +394,20 @@ void ADC1_Channel_Selection(uint8_t ch)
 }
 
 
+uint8_t gpioRead[10];
 
+void ddGpio(GPIO_TypeDef *gpio,uint16_t pin, uint8_t ch)
+{
+	if (HAL_GPIO_ReadPin(gpio, pin))
+	{
+		gpioRead[ch] = 2;
+	}
+	else
+	{
+		gpioRead[ch] = 1;
+	}
+
+}
 
 
 void Test_While()
@@ -404,13 +417,14 @@ void Test_While()
 #if 0
 //	TxTest();
 
-	Force_Duty();
 	if(PIDEn)PID_OnOfff_Config2();
-#else
-	NTC_TempWhile();
+	HP1_Cmd_Config();
 	HP1_Temp_Duty_Ctrl();
-//	HP1_Cmd_Config();
 	UartRxDataProcess();
+	Catridge_Detect_Event();
+#else
+	Force_Duty();
+	NTC_TempWhile();
 
 #endif
 

@@ -122,7 +122,7 @@ void Uart_PassingConfig(UART_T* uart, uint8_t data, char startChar, char endChar
 	}
 }
 
-
+int iitt;
 void TxTest()
 {
 	static uint32_t timeStamp;
@@ -132,6 +132,7 @@ void TxTest()
 		timeStamp = HAL_GetTick();
 //		printf("time %u \r\n",HAL_GetTick());
 		HAL_UART_Transmit(&huart2, "hello", 5,100);
+	iitt++;
 
 
 	}
@@ -160,7 +161,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	 if (huart == &huart1)
 	 {
 		HAL_UART_Receive_IT(&huart1, Rx_data1, 1);
-		Uart_RxBuff_View(&m_uart1, Rx_data1[0]);
+		Uart_RxBuff_View(&m_uart1, Rx_data1[0]); //m_uart1.rxViewBuff
 	 	Uart_PassingConfig(&m_uart1, Rx_data1[0],'[', ']');
 
 	 }

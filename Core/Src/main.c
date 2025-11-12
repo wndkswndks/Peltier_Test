@@ -98,8 +98,8 @@ int main(void)
   /* USER CODE BEGIN 2 */
   Test_Init();
   Uart_Init();
-  //eeprom_test();
-  Eeprom_All_Read();
+  eeprom_test();
+//  Eeprom_All_Read();
 
   /* USER CODE END 2 */
 
@@ -110,7 +110,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-    Test_While();
+//    Test_While();
+//  	TxTest();
+
   }
   /* USER CODE END 3 */
 }

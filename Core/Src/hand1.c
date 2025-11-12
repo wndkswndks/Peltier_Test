@@ -18,12 +18,27 @@ void Main_Tx_4Data(int cmd, int data1, int data2, int data3, int data4)
 	HAL_UART_Transmit(&huart2,str,len,100);
 }
 
+#define DEBUG_PRINT
+
+void Debug_MAIN_Printf(uint8_t rxtx, uint8_t cmd, uint16_t data)
+{
+#ifdef DEBUG_PRINT
+
+	if(rxtx != DEBUG_RX && rxtx != DEBUG_TX) return;
+	char rxtxStr[2][3] = {"Rx","Tx"};
+	printf("[%s] MAIN [%u,%u]\r\n",rxtxStr[rxtx], cmd, data);
+
+#endif
+
+}
+
 void Main_Tx_1Data(int cmd, int data)
 {
 	uint8_t len;
 	uint8_t str[40];
 	len = sprintf(str,"[%d,%d]\r\n",cmd, data);
 	HAL_UART_Transmit(&huart2,str,len,100);
+	Debug_MAIN_Printf(DEBUG_TX, cmd, data);
 }
 
 void HP1_Cmd_Config()
@@ -39,6 +54,57 @@ void HP1_Cmd_Config()
 	}
 }
 
+uint16_t delTx= 100;
+void Catridge_All_Tx()
+{
+	Main_Tx_1Data(CMD_HP1_CART_ID, m_hd1.catridgeId);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_MANUFAC_YY, m_hd1.manufacYY);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_MANUFAC_MM, m_hd1.manufacMM);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_MANUFAC_DD, m_hd1.manufacDD);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_ISSUED_YY, m_hd1.issuedYY);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_ISSUED_MM, m_hd1.issuedMM);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_ISSUED_DD, m_hd1.issuedDD);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_REMIND_SHOT, m_hd1.remainingShotNum);
+	HAL_Delay(delTx);
+	Main_Tx_1Data(CMD_HP1_CATRIDGE_STATUS, m_hd1.catridgeStatus);
+	HAL_Delay(delTx);
+
+}
+void Catridge_Detect_Event()
+{
+	static uint8_t step = STEP0;
+	static uint32_t timeStamp;
+
+
+
+	if(m_hd1.catridgeDetect)
+	{
+		if(m_hd1.catridgeAcction==0)
+		{
+			HAL_Delay(100); // wate for eeprom wake up
+			Eeprom_All_Read();
+			Main_Tx_1Data(CMD_HP1_CATRIDGE_EVENT, CATRIGE_DETECT);
+			Catridge_All_Tx();
+		}
+		m_hd1.catridgeAcction = 1;
+	}
+	else
+	{
+		if(m_hd1.catridgeAcction==1)
+		{
+			Main_Tx_1Data(CMD_HP1_CATRIDGE_EVENT, CATRIGE_UN_DETECT);
+		}
+		m_hd1.catridgeAcction = 0;
+	}
+
+}
 void UartRx1DataProcess()
 {
 	int rxCmd = m_uart1.rxCmdAdd;
@@ -47,9 +113,15 @@ void UartRx1DataProcess()
 	uint16_t valueTd, valueWatt;
 	if(rxCmd !=0)
 	{
-
-		m_uart2.rxCmdAdd = 0;
-		m_uart2.rxCmdData = 0;
+		switch (rxCmd)
+		{
+			case CMD_HP1_TEST_IO:
+				m_hd1.catridgeDetect = rxData;
+				m_hd1.catridgeAcction = 0;
+			break;
+		}
+		m_uart1.rxCmdAdd = 0;
+		m_uart1.rxCmdData = 0;
 	}
 
 }
@@ -62,6 +134,7 @@ void UartRx2DataProcess()
 	uint16_t valueTd, valueWatt;
 	if(rxCmd !=0)
 	{
+		Debug_MAIN_Printf(DEBUG_RX, rxCmd, rxData);
 		switch (rxCmd)
 		{
 			case CMD_HP1_ADD:

@@ -28,7 +28,7 @@ typedef struct
 {
 	uint8_t rxBuff[RX_BUFF_SIZE];
 	uint8_t txBuff[TX_BUFF_SIZE];
-	uint8_t rxViewBuff[RX_BUFF_SIZE];
+	char rxViewBuff[RX_BUFF_SIZE];
 	uint16_t rxViewCnt;
 	uint16_t rxCnt;
 	int rxCmdAdd;
