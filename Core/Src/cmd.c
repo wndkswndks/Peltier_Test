@@ -13,7 +13,8 @@ uint8_t Rx_data3[1];
 
 void Uart_Init()
 {
-	HAL_UART_Receive_IT(&huart1, Rx_data2, 1);
+	HAL_UART_Receive_IT(&huart1, Rx_data1, 1);
+	HAL_UART_Receive_IT(&huart2, Rx_data2, 1);
 }
 
 
@@ -76,49 +77,52 @@ void Rx_BuffClear(UART_T *uart)
 
 
 
+void UartRx3DataProcess()
+{
+
+}
+
+void UartRxDataProcess()
+{
+	UartRx1DataProcess();
+	UartRx2DataProcess();//
+}
 
 
-int imgAddress;
+
+
+int cmdAdd;
 int dataNum;
 uint32_t onTime, offTime, pluse, ready, standby;
-void Uart1_Passing(uint8_t* ptr)//stm32쪽
+
+void Uart_Passing(UART_T* uart, uint8_t* ptr)//stm32占쏙옙
 {
-	int i = 0;
-	for(i =0 ;i < RX_BUFF_SIZE;i++)
-	{
-		if(m_uart1.rxBuff[i]==NULL)i++;
-		else break;
-	}
-	if(i==RX_BUFF_SIZE)// 들어온 데이터가 없으면 나가기
-	{
-		return;
-	}
-	char* ptrStart = strstr((char*)(m_uart1.rxBuff+i),"[");
-	char* ptrEnd = strstr((char*)(m_uart1.rxBuff+i),"]");
+	char* ptrStart = strchr((char*)(uart->rxBuff),'[');
+	char* ptrEnd = strrchr ((char*)(uart->rxBuff),']');
 
 	if(ptrStart !=NULL && ptrEnd !=NULL)
 	{
-		sscanf(ptr,"[%d,%d]",&imgAddress,&dataNum);
-		Rf_RxLcd_Parssing(imgAddress, dataNum);
+		sscanf(ptr,"[%d,%d]",&(uart->rxCmdAdd),&(uart->rxCmdData));
 	}
 	else
 	{
 //		ERR_FUC_LINE();
-		printf("%s \r\n",m_uart1.rxBuff);
+		printf("%s \r\n",uart->rxBuff);
 	}
 
-	Rx_BuffClear(&m_uart1);
+	Rx_BuffClear(uart);
 }
-
 
 void Uart_PassingConfig(UART_T* uart, uint8_t data, char startChar, char endChar)
 {
 	if(Uart_RxBuff_Get(uart, data, startChar, endChar))
 	{
-		Uart1_Passing(uart->rxBuff);
+//		Uart1_Passing(uart->rxBuff);
+		Uart_Passing(uart, uart->rxBuff);
 	}
 }
 
+int iitt;
 void TxTest()
 {
 	static uint32_t timeStamp;
@@ -127,7 +131,8 @@ void TxTest()
 	{
 		timeStamp = HAL_GetTick();
 //		printf("time %u \r\n",HAL_GetTick());
-		HAL_UART_Transmit(&huart1, "hello", 5,100);
+		HAL_UART_Transmit(&huart2, "hello", 5,100);
+	iitt++;
 
 
 	}
@@ -155,24 +160,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	static uint8_t endFlag = 0;
 	 if (huart == &huart1)
 	 {
-		HAL_UART_Receive_IT(&huart1, Rx_data2, 1);
-		Uart_RxBuff_View(&m_uart2, Rx_data2[0]);
-//	    Rf_Rx_Get(Rx_data2[0]);
+		HAL_UART_Receive_IT(&huart1, Rx_data1, 1);
+		Uart_RxBuff_View(&m_uart1, Rx_data1[0]); //m_uart1.rxViewBuff
+	 	Uart_PassingConfig(&m_uart1, Rx_data1[0],'[', ']');
 
 	 }
-//	 else if (huart == &huart1)
-//	 {
-//		HAL_UART_Receive_IT(&huart1, Rx_data1, 1);
-//		Uart_RxBuff_View(&m_uart1, Rx_data1[0]);
-//	 	Uart_PassingConfig(&m_uart1, Rx_data1[0],'[', ']');
-//	 }
-//	 if (huart == &huart3)
-//	 {
-//		HAL_UART_Receive_IT(&huart3, Rx_data3, 1);
-//		Uart_RxBuff_View(&m_uart3, Rx_data3[0]);
-//		Rf_Rx_Get(Rx_data3[0]);
+	 else if(huart == &huart2)
+	 {
+		HAL_UART_Receive_IT(&huart2, Rx_data2, 1);
+		Uart_RxBuff_View(&m_uart2, Rx_data2[0]);
+	 	Uart_PassingConfig(&m_uart2, Rx_data2[0],'[', ']');
 
-//	 }
+	 }
 }
 
 

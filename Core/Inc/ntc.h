@@ -1,12 +1,11 @@
 /*
- * TestMy.h
+ * ntc.h
  *
- *  Created on: Jul 17, 2025
+ *  Created on: Aug 11, 2025
  *      Author: Cellah_SW
  */
-
-#ifndef TESTMY_H
-#define TESTMY_H
+#ifndef NTC_H
+#define NTC_H
 
 /*  			include start  			*/
 #include "common.h"
@@ -21,8 +20,6 @@
 
 /*  			enum start  			*/
 
-
-
 /*  			enum end  				*/
 
 
@@ -34,9 +31,6 @@
 
 
 /*  			function start  		*/
-void Pwm_Init();
-void Test_Init();
-void Test_While();
 
 
 /*  			function end  			*/
@@ -48,8 +42,5 @@ void Test_While();
 
 /*  			extern end  			*/
 
-
-
-#endif /* INC_TESTMY_H_ */
-
+#endif
 

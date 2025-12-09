@@ -1,0 +1,266 @@
+/*
+ * hand1.h
+ *
+ *  Created on: Sep 29, 2025
+ *      Author: Cellah_SW
+ */
+
+#ifndef HAND_1_H
+#define HAND_1_H
+
+/*  			include start  			*/
+#include "common.h"
+/*  			include end  			*/
+
+
+
+/*  			define start  			*/
+#define IS_HP1_SHOT_PUSH()         (HAL_GPIO_ReadPin(CAT_DET_GPIO_Port, CAT_DET_Pin) == 0)
+
+/*  			define end  			*/
+
+
+/*  			enum start  			*/
+typedef enum
+{
+
+	CMD_DUMY = 0,
+	CMD_ENERGY	=	1,
+	CMD_PULSE_DURATION = 2,
+	CMD_POST_COOLING = 3,
+	CMD_INTERVAL = 4,
+	CMD_CURRENT_SHOT = 5,
+	CMD_TOTAL_JOULE = 6,
+	CMD_REMIND_SHOT = 7,
+	CMD_TEMPERATURE_SHOT  = 8,
+	CMD_XXXX ,
+
+	CMD_FRQ_CH0	= 10,
+	CMD_FRQ_CH1,
+	CMD_FRQ_CH2,
+	CMD_FRQ_CH3,
+	CMD_FRQ_CH4,
+	CMD_FRQ_CH5,
+	CMD_FRQ_CH6	= 16,
+
+	CMD_WATT_CH0	= 17,
+	CMD_WATT_CH1,
+	CMD_WATT_CH2,
+	CMD_WATT_CH3,
+	CMD_WATT_CH4,
+	CMD_WATT_CH5,
+	CMD_WATT_CH6	= 23,
+
+	CMD_CAIV_DURATION = 30,
+
+	CMD_ERR = 31,
+	CMD_ALRAM = 32,
+	CMD_INFO = 33,
+	CMD_OK = 34,
+
+	CMD_CART_ID  = 35,
+	CMD_MANUFAC_YY = 36,
+	CMD_MANUFAC_MM = 37,
+	CMD_MANUFAC_DD = 38,
+	CMD_ISSUED_YY = 39,
+	CMD_ISSUED_MM = 40,
+	CMD_ISSUED_DD = 41,
+	CMD_DAY_REQ = 42,
+	CMD_RTC = 43,
+	CMD_RTC_YY = 44,
+	CMD_RTC_MM = 45,
+	CMD_RTC_DD = 46,
+	CMD_RTC_HOUR = 47,
+	CMD_RTC_MIN = 48,
+	CMD_RTC_SEC = 49,
+
+	CMD_CATRIDGE_STATUS    = 56,
+	CMD_CATRIDGE_EVENT= 57,
+	CMD_FRQ_REQ = 58,
+	CMD_WATT_REQ = 59,
+
+	CMD_LCD_STATUS = 60,
+	CMD_SYS_CHK = 61,
+	CMD_TRET_READY_OK = 62,
+
+	CMD_DO_ALL_LIVE = 70,
+	CMD_GET_ALL_CART = 71,
+	CMD_GET_ALL_CART_END = 72,
+
+	CMD_LCD_EXP = 85,
+	CMD_LCD_AUTO_CAL = 87,
+
+	CMD_TRANDU_FRQ_BASE = 90,
+	CMD_TRANDU1_FRQ = 91,
+	CMD_TRANDU2_FRQ = 92,
+	CMD_TRANDU3_FRQ = 93,
+	CMD_TRANDU4_FRQ = 94,
+	CMD_TRANDU5_FRQ = 95,
+	CMD_TRANDU6_FRQ = 96,
+	CMD_TRANDU7_FRQ = 97,
+
+	CMD_TRANDU_WATT_BASE	= 100,
+	// TRANDU1
+	CMD_TRANDU1_WATT10	= 101,
+	CMD_TRANDU1_WATT09	= 102,
+	CMD_TRANDU1_WATT08	= 103,
+	CMD_TRANDU1_WATT07	= 104,
+	CMD_TRANDU1_WATT06	= 105,
+	CMD_TRANDU1_WATT05	= 106,
+	CMD_TRANDU1_WATT04	= 107,
+	CMD_TRANDU1_WATT03	= 108,
+	CMD_TRANDU1_WATT02	= 109,
+	CMD_TRANDU1_WATT01	= 110,
+	CMD_TRANDU1_WATT005 = 111,
+
+	// TRANDU2
+	CMD_TRANDU2_WATT10	= 112,
+	CMD_TRANDU2_WATT09	= 113,
+	CMD_TRANDU2_WATT08	= 114,
+	CMD_TRANDU2_WATT07	= 115,
+	CMD_TRANDU2_WATT06	= 116,
+	CMD_TRANDU2_WATT05	= 117,
+	CMD_TRANDU2_WATT04	= 118,
+	CMD_TRANDU2_WATT03	= 119,
+	CMD_TRANDU2_WATT02	= 120,
+	CMD_TRANDU2_WATT01	= 121,
+	CMD_TRANDU2_WATT005 = 122,
+
+	// TRANDU3
+	CMD_TRANDU3_WATT10	= 123,
+	CMD_TRANDU3_WATT09	= 124,
+	CMD_TRANDU3_WATT08	= 125,
+	CMD_TRANDU3_WATT07	= 126,
+	CMD_TRANDU3_WATT06	= 127,
+	CMD_TRANDU3_WATT05	= 128,
+	CMD_TRANDU3_WATT04	= 129,
+	CMD_TRANDU3_WATT03	= 130,
+	CMD_TRANDU3_WATT02	= 131,
+	CMD_TRANDU3_WATT01	= 132,
+	CMD_TRANDU3_WATT005 = 133,
+
+	// TRANDU4
+	CMD_TRANDU4_WATT10	= 134,
+	CMD_TRANDU4_WATT09	= 135,
+	CMD_TRANDU4_WATT08	= 136,
+	CMD_TRANDU4_WATT07	= 137,
+	CMD_TRANDU4_WATT06	= 138,
+	CMD_TRANDU4_WATT05	= 139,
+	CMD_TRANDU4_WATT04	= 140,
+	CMD_TRANDU4_WATT03	= 141,
+	CMD_TRANDU4_WATT02	= 142,
+	CMD_TRANDU4_WATT01	= 143,
+	CMD_TRANDU4_WATT005 = 144,
+
+	// TRANDU5
+	CMD_TRANDU5_WATT10	= 145,
+	CMD_TRANDU5_WATT09	= 146,
+	CMD_TRANDU5_WATT08	= 147,
+	CMD_TRANDU5_WATT07	= 148,
+	CMD_TRANDU5_WATT06	= 149,
+	CMD_TRANDU5_WATT05	= 150,
+	CMD_TRANDU5_WATT04	= 151,
+	CMD_TRANDU5_WATT03	= 152,
+	CMD_TRANDU5_WATT02	= 153,
+	CMD_TRANDU5_WATT01	= 154,
+	CMD_TRANDU5_WATT005 = 155,
+
+	// TRANDU6
+	CMD_TRANDU6_WATT10	= 156,
+	CMD_TRANDU6_WATT09	= 157,
+	CMD_TRANDU6_WATT08	= 158,
+	CMD_TRANDU6_WATT07	= 159,
+	CMD_TRANDU6_WATT06	= 160,
+	CMD_TRANDU6_WATT05	= 161,
+	CMD_TRANDU6_WATT04	= 162,
+	CMD_TRANDU6_WATT03	= 163,
+	CMD_TRANDU6_WATT02	= 164,
+	CMD_TRANDU6_WATT01	= 165,
+	CMD_TRANDU6_WATT005 = 166,
+
+	// TRANDU7
+	CMD_TRANDU7_WATT10	= 167,
+	CMD_TRANDU7_WATT09	= 168,
+	CMD_TRANDU7_WATT08	= 169,
+	CMD_TRANDU7_WATT07	= 170,
+	CMD_TRANDU7_WATT06	= 171,
+	CMD_TRANDU7_WATT05	= 172,
+	CMD_TRANDU7_WATT04	= 173,
+	CMD_TRANDU7_WATT03	= 174,
+	CMD_TRANDU7_WATT02	= 175,
+	CMD_TRANDU7_WATT01	= 176,
+	CMD_TRANDU7_WATT005 = 177,
+
+	CMD_HP1_ADD = 200,
+} HD1_CMD_E;
+
+typedef enum
+{
+	CMD_HP1_COOL_CTRL = 1,
+	CMD_HP1_COOL_OFF = 2,
+
+	REQ_DATA = 0xffff,
+
+	CATRIGE_DETECT = 0,
+	CATRIGE_UN_DETECT = 1,
+
+	DEBUG_RX = 0,
+	DEBUG_TX = 1,
+} HD1_DATA;
+
+/*  			enum end  				*/
+
+
+
+/*  			stuct start  			*/
+typedef struct
+{
+	uint8_t catridgeId;
+	uint16_t manufacYY;
+	uint16_t manufacMM;
+	uint16_t manufacDD;
+	uint16_t issuedYY;
+	uint16_t issuedMM;
+	uint16_t issuedDD;
+	uint16_t rfFrqBuff[8];
+	uint16_t rfWattBuff[78];
+	uint16_t remainingShotNum;
+	uint16_t catridgeStatus;
+	uint8_t step;
+	uint8_t mode;
+	uint8_t pwmDuty;
+	uint8_t flashFirst;
+	uint8_t catridgeDetect;
+	uint8_t catridgeAcction;
+	uint16_t detectOnCnt;
+	uint16_t detectOffCnt;
+	uint32_t lastHPTxTime;
+	uint8_t liveChkCnt;
+	uint8_t cartAllSend;
+} HD1_T;
+
+/*  			stuct end  				*/
+
+
+
+/*  			function start  		*/
+void HP1_Temp_Duty_Ctrl();
+void UartRx1DataProcess();
+void Main_Tx_4Data(int cmd, int data1, int data2, int data3, int data4);
+void Main_Tx_1Data(int cmd, int data);
+
+void HP1_Cmd_Config();
+void Debug_MAIN_Printf(uint8_t rxtx, uint8_t cmd, uint16_t data);
+
+
+/*  			function end  			*/
+
+
+/*  			extern start  			*/
+
+
+extern HD1_T m_hd1;
+/*  			extern end  			*/
+
+#endif
+

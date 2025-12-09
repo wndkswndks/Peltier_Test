@@ -11,7 +11,7 @@
   *
   * This software is licensed under terms that can be found in the LICENSE file
   * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * If no LICENSE file comes with this so7ftware, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -19,7 +19,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "adc.h"
-#include "spi.h"
+#include "i2c.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -91,13 +91,17 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM1_Init();
-  MX_SPI1_Init();
   MX_USART1_UART_Init();
   MX_ADC1_Init();
-  MX_ADC2_Init();
+  MX_I2C1_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   Test_Init();
-//  Pwm_DutySet_Tim1_CH4(2000);
+  Uart_Init();
+  eeprom_test();
+#if 1
+  Eeprom_All_Read();
+#endif
 
   /* USER CODE END 2 */
 
@@ -109,6 +113,8 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
     Test_While();
+//  	TxTest();
+
   }
   /* USER CODE END 3 */
 }

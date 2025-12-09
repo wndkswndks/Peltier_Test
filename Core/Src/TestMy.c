@@ -13,7 +13,7 @@ void Pwm_Init()
 
 }
 
-uint32_t dutyTest;
+uint32_t dutyTest = 10;
 void Pwm_DutySet_Tim1_CH4(uint32_t pwmDuty)
 {
 	TIM1->CCR4 = pwmDuty;
@@ -38,7 +38,7 @@ uint8_t MAX31855_ReadTemperature()
     uint32_t raw = 0;
 
     MAX31855_CS_LOW();
-    HAL_SPI_Receive(&hspi1, spi_rx_buf, 4, HAL_MAX_DELAY);
+//    HAL_SPI_Receive(&hspi1, spi_rx_buf, 4, HAL_MAX_DELAY);
     MAX31855_CS_HIGH();
 
     // ���ŵ� 4����Ʈ�� uint32_t�� ����
@@ -83,7 +83,8 @@ uint8_t MAX6675_ReadTemperature()
     MAX6675_CS_LOW();
     HAL_Delay(1);  // �ణ�� ���� �ð�
 
-    if (HAL_SPI_Receive(&hspi1, rx_buf, 2, HAL_MAX_DELAY) != HAL_OK) {
+//    if (HAL_SPI_Receive(&hspi1, rx_buf, 2, HAL_MAX_DELAY) != HAL_OK)
+    {
         MAX6675_CS_HIGH();
         errTempCnt6675++;
         return 2;
@@ -118,7 +119,7 @@ float PIDoutput;
 uint32_t PIDoutputCCR;
 uint8_t KpUpDn;
 
-uint8_t PIDEn, PIDKey;
+uint8_t PIDEn = 0, PIDKey;
 float integral;
 float derivative;
 
@@ -180,42 +181,62 @@ void calculate_p_pwm(float target_temp, float current_temp) {
 void Test_Init()
 {
 	Pwm_Init();
+//	HAL_Delay(2000);
+//	Pwm_DutySet_Tim1_CH4(10000);
+	m_hd1.step = STEP1;
+
 
 }
 #define ALPHA  0.7
-float Tx_low_pass_buff[10];
-uint8_t Tx_low_cnt;
-float lowPassTemp;
-void Low_Pass_Filter(int X)
-{
-  Tx_low_pass_buff[Tx_low_cnt++]  =  ALPHA * lowPassTemp + (1-ALPHA)* X;
-  Tx_low_cnt %=10;
-  if(Tx_low_cnt==0) lowPassTemp = Tx_low_pass_buff[9];
-  else lowPassTemp = Tx_low_pass_buff[Tx_low_cnt-1];
+float lowPassTemp,lowPassTempPre;
+float lowPassTempCh[10],lowPassTempPreCh[10];
 
+extern uint32_t adcChNum,adcChBuff[11];
+
+uint32_t Low_Pass_Filter(int X)
+{
+  uint32_t temp;
+  lowPassTemp  =  ALPHA * lowPassTempPre + (1-ALPHA)* X;
+  temp = (uint32_t)lowPassTemp;
+  lowPassTempPre = lowPassTemp;
+
+  return temp;
 }
 
+
+uint32_t Low_Pass_Filter_Ch(int X,uint8_t ch)
+{
+  uint32_t temp;
+  lowPassTempCh[ch]  =  ALPHA * lowPassTempPreCh[ch] + (1-ALPHA)* X;
+  temp = (uint32_t)lowPassTempCh[ch];
+  lowPassTempPreCh[ch] = lowPassTempCh[ch];
+
+  return temp;
+}
+
+float nowTemp;
 void PID_Ctrl()
 {
 	static uint32_t timeStamp;
 	int intTemp31855 = temp31855*10;//
 	int intTemp6675 = temp6675*10;
-	int intlowpass = lowPassTemp*10;
+	int intlowpass = adcChBuff[0];
 	int intTargetTemp = targetTemp*10;
 	int intPIDoutput = PIDoutput;
 	int intTick = timeStamp/1000;
 	int intKp = Kp;
-
 	if(HAL_GetTick()-timeStamp >= 500)
 	{
 		timeStamp = HAL_GetTick();
+		nowTemp = (float)adcChBuff[0]/10;
+		calculate_pid(targetTemp, nowTemp);
 
-		calculate_pid(targetTemp, lowPassTemp);
-
-		printf("%d %d %d %d\r\n", intlowpass, intTargetTemp, intPIDoutput, intKp);
+//		printf("%d %d %d %d\r\n", intlowpass, intTargetTemp, intPIDoutput, intKp);
 	}
 
 }
+
+uint16_t ttuuDuty;
 void Force_Duty()
 {
 
@@ -226,11 +247,13 @@ void Force_Duty()
 		if(dutyTest ==11)
 		{
 			Pwm_DutySet_Tim1_CH4(0);
+			ttuuDuty = 0;
 		}
 		else
 		{
 			dutyTest *=1000;
 			Pwm_DutySet_Tim1_CH4(dutyTest);
+			ttuuDuty = dutyTest;
 		}
 		dutyTest = 0;
 	}
@@ -248,13 +271,13 @@ void Force_DutyTest()
 			{
 				toggle = 0;
 				Pwm_DutySet_Tim1_CH4(10000);
-				duration = 20000;
+				duration = 120000;
 			}
 			else
 			{
 				toggle = 1;
 				Pwm_DutySet_Tim1_CH4(0);
-				duration = 60000;
+				duration = 120000;
 
 			}
 		timeStamp = HAL_GetTick();
@@ -273,29 +296,12 @@ void PID_OnOfff_Config()
 
 		if(PIDKey)
 		{
-#if 0
-			if(lowPassTemp>17)
-			{
-				hTempCnt++;
-				if(hTempCnt==4)//1��
-				{
-					hTempCnt = 0;
-					timeStamp2 = HAL_GetTick();
-					targetTemp = 7;
-					PIDEn = 1;
-				}
-			}
-			else hTempCnt = 0;
-
-#else
-
 			if(HAL_GetTick()-timeStamp3 >= 120000 && PIDEn==0)
 			{
 				PIDEn = 1;
 				timeStamp3 = HAL_GetTick();
 				timeStamp2 = timeStamp3;
 			}
-#endif
 
 			if(PIDEn)
 			{
@@ -304,56 +310,79 @@ void PID_OnOfff_Config()
 					targetTemp = 7;
 					PIDEn = 0;
 					Pwm_DutySet_Tim1_CH4(0);
-					printf("\r\n");
 				}
 			}
 
 		}
-
 		timeStamp = HAL_GetTick();
 	}
 
 }
 
-uint32_t adc1, adc2;
-void ADC_Read()
+
+
+
+
+
+
+void ADC1_Channel_Selection(uint8_t ch)
 {
+  ADC_ChannelConfTypeDef sConfig = {0};
+  if(ch == 0) sConfig.Channel = ADC_CHANNEL_0;
+  else if(ch == 1)  sConfig.Channel = ADC_CHANNEL_1;
+  else if(ch == 4)  sConfig.Channel = ADC_CHANNEL_4;
+  else if(ch == 5)  sConfig.Channel = ADC_CHANNEL_5;
+  else if(ch == 6)  sConfig.Channel = ADC_CHANNEL_6;
+  else if(ch == 7)  sConfig.Channel = ADC_CHANNEL_7;
+  else if(ch == 8)  sConfig.Channel = ADC_CHANNEL_8;
+  else if(ch == 9)  sConfig.Channel = ADC_CHANNEL_9;
+  else return;
 
-	HAL_ADC_Start(&hadc1);
-	if (HAL_ADC_PollForConversion(&hadc1, 1000000) == HAL_OK)
-	{
-		adc1 = HAL_ADC_GetValue(&hadc1);
-		HAL_ADC_Stop(&hadc1);
-	}
+  sConfig.Rank = ADC_REGULAR_RANK_1;
+  sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-	HAL_ADC_Start(&hadc2);
-	if (HAL_ADC_PollForConversion(&hadc2, 1000000) == HAL_OK)
-	{
-		adc2 = HAL_ADC_GetValue(&hadc2);
-		HAL_ADC_Stop(&hadc2);
-	}
 }
+
+
+uint8_t gpioRead[10];
+
+void ddGpio(GPIO_TypeDef *gpio,uint16_t pin, uint8_t ch)
+{
+	if (HAL_GPIO_ReadPin(gpio, pin))
+	{
+		gpioRead[ch] = 2;
+	}
+	else
+	{
+		gpioRead[ch] = 1;
+	}
+
+}
+
 
 void Test_While()
 {
 
+
 #if 0
-	Force_Duty();
-	PID_OnOfff_Config();
-	if(PIDEn)
-	{
-		PID_Ctrl();
-	}
+//	TxTest();
+
 #else
-//	Force_DutyTest();
-	//Force_Duty();
-	ADC_Read();
+	Force_Duty();
+	HP1_Cmd_Config();
+	HP1_Temp_Duty_Ctrl();
+	Catridge_Detect_Event();
+	NTC_TempWhile();
+	UartRxDataProcess();
+
 
 #endif
 
-
-
-
+//	ddGpio(CAT_DET_GPIO_Port,CAT_DET_Pin,0);
 }
 
 

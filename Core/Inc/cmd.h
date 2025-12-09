@@ -28,16 +28,17 @@ typedef struct
 {
 	uint8_t rxBuff[RX_BUFF_SIZE];
 	uint8_t txBuff[TX_BUFF_SIZE];
-	uint8_t rxViewBuff[RX_BUFF_SIZE];
+	char rxViewBuff[RX_BUFF_SIZE];
 	uint16_t rxViewCnt;
 	uint16_t rxCnt;
+	int rxCmdAdd;
+	int rxCmdData;
 	uint8_t clearFlag1;
 	uint8_t clearFlag2;
 	uint8_t txFlag;
 	uint8_t startFlag;
 	uint8_t endFlag;
-	uint8_t rs485En;//�ʿ��
-
+	uint8_t rs485En;//�ʿ��?
 } UART_T;
 
 
@@ -52,10 +53,14 @@ void TxTest();
 
 /*  			function end  			*/
 void Uart_Gulobal();
+void Uart_Init();
 
 
 /*  			extern start  			*/
 
+
+extern UART_T m_uart1;
+extern UART_T m_uart2;
 
 
 /*  			extern end  			*/
