@@ -144,8 +144,18 @@ void calculate_pid(float target_temp, float current_temp)
     else if (PIDoutput < 0.0f)
         PIDoutput = 0.0f;
 
-	PIDoutputCCR = PIDoutput*100;
-	Pwm_DutySet_Tim1_CH4(PIDoutputCCR);
+	if(PIDerror < -0.5)
+	{
+		PIDoutput =0;
+		PIDoutputCCR = 0;
+		Pwm_DutySet_Tim1_CH4(0);
+
+	}
+	else
+	{
+		PIDoutputCCR = PIDoutput*100;
+		Pwm_DutySet_Tim1_CH4(PIDoutputCCR);
+	}
 
 }
 
@@ -392,10 +402,10 @@ void Test_While()
 	HP1_Cmd_Config();
 	NTC_TempWhile();
 	UartRxDataProcess();
+	Catridge_Detect_Event();
 
 
 #endif
-	Catridge_Detect_Event();
 
 //	ddGpio(CAT_DET_GPIO_Port,CAT_DET_Pin,0);
 }
