@@ -18,8 +18,8 @@
 #define CAT24C16_PAGE_BYTES  16U    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿?
 #define CAT24C16_TOTAL_BYTES 2048U
 #define CAT24C16_ADDRESS_ID   0x50U<<1
-#define FLASHA_FIRST_FLAG   33
-#define FLASHA_COMPLITE_FLAG   44
+#define FLASHA_FIRST_FLAG   44
+#define FLASHA_COMPLITE_FLAG   66
 
 
 /*  			define end  			*/

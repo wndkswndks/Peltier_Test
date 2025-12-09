@@ -183,12 +183,15 @@ void Test_Init()
 	Pwm_Init();
 //	HAL_Delay(2000);
 //	Pwm_DutySet_Tim1_CH4(10000);
+	m_hd1.step = STEP1;
+
+
 }
 #define ALPHA  0.7
 float lowPassTemp,lowPassTempPre;
 float lowPassTempCh[10],lowPassTempPreCh[10];
 
-extern uint32_t adcChNum,adcChBuff[10];
+extern uint32_t adcChNum,adcChBuff[11];
 
 uint32_t Low_Pass_Filter(int X)
 {
@@ -316,55 +319,6 @@ void PID_OnOfff_Config()
 
 }
 
-void PID_OnOfff_Config2()
-{
-	static uint8_t step = STEP0;
-	switch (step)
-	{
-		case STEP0:
-			if(adcChBuff[0]>70)
-			{
-				Pwm_DutySet_Tim1_CH4(10000);
-				step = STEP1;
-			}
-		break;
-
-		case STEP1:
-			if(adcChBuff[0] <= 68)
-			{
-				Pwm_DutySet_Tim1_CH4(0);
-				//step = STEP2;
-			}
-			else if(adcChBuff[0] == 69)
-			{
-				Pwm_DutySet_Tim1_CH4(0);
-				//step = STEP2;
-			}
-			else if(adcChBuff[0] == 70)
-			{
-				Pwm_DutySet_Tim1_CH4(1000);
-				//step = STEP2;
-			}
-			else if(adcChBuff[0] == 71)
-			{
-				Pwm_DutySet_Tim1_CH4(5000);
-				//step = STEP2;
-			}
-			else if(adcChBuff[0] >= 72)
-			{
-				Pwm_DutySet_Tim1_CH4(10000);
-				//step = STEP2;
-			}
-
-
-		break;
-
-		case STEP2:
-			//PID_Ctrl();
-		break;
-	}
-
-}
 
 
 
@@ -417,21 +371,18 @@ void Test_While()
 #if 0
 //	TxTest();
 
-	if(PIDEn)PID_OnOfff_Config2();
-	HP1_Cmd_Config();
-	HP1_Temp_Duty_Ctrl();
-	UartRxDataProcess();
-	Catridge_Detect_Event();
 #else
 	Force_Duty();
+	HP1_Cmd_Config();
+	HP1_Temp_Duty_Ctrl();
+	Catridge_Detect_Event();
 	NTC_TempWhile();
+	UartRxDataProcess();
+
 
 #endif
 
-
-
-
-
+//	ddGpio(CAT_DET_GPIO_Port,CAT_DET_Pin,0);
 }
 
 

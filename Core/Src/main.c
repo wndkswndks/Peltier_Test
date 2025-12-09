@@ -11,7 +11,7 @@
   *
   * This software is licensed under terms that can be found in the LICENSE file
   * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
+  * If no LICENSE file comes with this so7ftware, it is provided AS-IS.
   *
   ******************************************************************************
   */
@@ -99,7 +99,9 @@ int main(void)
   Test_Init();
   Uart_Init();
   eeprom_test();
-//  Eeprom_All_Read();
+#if 1
+  Eeprom_All_Read();
+#endif
 
   /* USER CODE END 2 */
 
@@ -110,7 +112,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//    Test_While();
+    Test_While();
 //  	TxTest();
 
   }

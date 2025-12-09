@@ -94,11 +94,62 @@ void Eeprom_All_Read(void)
 	if(m_eep.buff[IDX_HP1_IS_FLASH_FIRST] != FLASHA_FIRST_FLAG)
 	{
 		m_hd1.flashFirst = FLASHA_FIRST_FLAG;
-		Eeprom_Byte_Write(IDX_HP1_IS_FLASH_FIRST, m_hd1.flashFirst);
+		m_hd1.catridgeId = 1;
+		m_hd1.manufacYY = 25;
+		m_hd1.manufacMM = 9;
+		m_hd1.manufacDD = 28;
+		m_hd1.issuedYY = 26;
+		m_hd1.issuedMM = 12;
+		m_hd1.issuedDD = 25;
 
-	    for (uint16_t i = 1; i < 200; ++i)
+		m_hd1.remainingShotNum = 8888;
+		m_hd1.catridgeStatus = 33;
+		for(int i = 1; i <= 7; i++)
+		{
+			m_hd1.rfFrqBuff[i] = 10000+i;
+
+		}
+		for(int i = 1; i <= 77; i++)
+		{
+			m_hd1.rfWattBuff[i] = 200+i;
+		}
+
+
+
+		m_eep.buff[IDX_HP1_IS_FLASH_FIRST] = m_hd1.flashFirst;
+		m_eep.buff[IDX_HP1_CART_ID_START] = m_hd1.catridgeId;
+		m_eep.buff[IDX_HP1_MANUFAC_YY_START] = m_hd1.manufacYY;
+		m_eep.buff[IDX_HP1_MANUFAC_MM_START] = m_hd1.manufacMM;
+		m_eep.buff[IDX_HP1_MANUFAC_DD_START] = m_hd1.manufacDD;
+		m_eep.buff[IDX_HP1_ISSUED_YY_START] = m_hd1.issuedYY;
+		m_eep.buff[IDX_HP1_ISSUED_MM_START] = m_hd1.issuedMM;
+		m_eep.buff[IDX_HP1_ISSUED_DD_START] = m_hd1.issuedDD;
+
+		for(int i = 0; i < 7; i++)
+		{
+			uint16_t v = m_hd1.rfFrqBuff[i+1];
+			m_eep.buff[i*2 + IDX_HP1_FRQ_BUFF_START]	 = (v >> 8) & 0xFF;
+			m_eep.buff[i*2 + 1 + IDX_HP1_FRQ_BUFF_START] = v & 0xFF;
+		}
+
+		for(int i = 0; i < 77; i++)
+		{
+			uint16_t v = m_hd1.rfWattBuff[i+1];
+			m_eep.buff[i*2 + IDX_HP1_WATT_BUFF_START]	  = (v >> 8) & 0xFF;
+			m_eep.buff[i*2 + 1 + IDX_HP1_WATT_BUFF_START] = v & 0xFF;
+		}
+
+		m_eep.buff[IDX_HP1_REMIND_SHOT_START] = (m_hd1.remainingShotNum >> 8) & 0xFF;
+		m_eep.buff[IDX_HP1_REMIND_SHOT_END]   = m_hd1.remainingShotNum & 0xFF;
+
+		// catridgeStatus
+		m_eep.buff[IDX_CATRIDGE_STATUS_START] = m_hd1.catridgeStatus;
+
+
+
+	    for (uint16_t i = 0; i < 200; ++i)
 	    {
-	        if (CAT24C16_WriteByte(&hi2c1,i, 0) != HAL_OK)
+	        if (CAT24C16_WriteByte(&hi2c1, i, m_eep.buff[i]) != HAL_OK)
 	        {
 	            // 에러 처리
 	            return;

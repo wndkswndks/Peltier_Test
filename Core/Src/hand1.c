@@ -8,17 +8,21 @@
 #include "hand1.h"
 
 HD1_T m_hd1;
-extern uint32_t adcChNum,adcChBuff[10];
+extern uint32_t adcChNum,adcChBuff[11];
+
+
 
 void Main_Tx_4Data(int cmd, int data1, int data2, int data3, int data4)
 {
 	uint8_t len;
 	uint8_t str[40];
+	while(HAL_GetTick() -m_hd1.lastHPTxTime<50);
 	len = sprintf(str,"[%d,%d,%d,%d,%d]\r\n",cmd, data1, data2, data3, data4);
 	HAL_UART_Transmit(&huart2,str,len,100);
+	m_hd1.lastHPTxTime = HAL_GetTick();
 }
 
-#define DEBUG_PRINT
+//#define DEBUG_PRINT
 
 void Debug_MAIN_Printf(uint8_t rxtx, uint8_t cmd, uint16_t data)
 {
@@ -36,45 +40,76 @@ void Main_Tx_1Data(int cmd, int data)
 {
 	uint8_t len;
 	uint8_t str[40];
+
+	while(HAL_GetTick() -m_hd1.lastHPTxTime<50);
 	len = sprintf(str,"[%d,%d]\r\n",cmd, data);
 	HAL_UART_Transmit(&huart2,str,len,100);
 	Debug_MAIN_Printf(DEBUG_TX, cmd, data);
+	m_hd1.lastHPTxTime = HAL_GetTick();
 }
 
 void HP1_Cmd_Config()
 {
 	static uint32_t timeStamp;
-
-	if(HAL_GetTick()-timeStamp >= 500)
+	if(m_hd1.cartAllSend == 0)return;
+	if(HAL_GetTick()-timeStamp >= 1000)
 	{
 
 		timeStamp = HAL_GetTick();
 
-		Main_Tx_4Data(CMD_HP1_ADD, m_hd1.mode, m_hd1.pwmDuty, adcChBuff[adcChNum], m_hd1.catridgeStatus);
+		Main_Tx_4Data(CMD_HP1_ADD, m_hd1.mode, m_hd1.pwmDuty, adcChBuff[4], m_hd1.catridgeStatus);
 	}
 }
 
 uint16_t delTx= 100;
+uint32_t tt1,tt2;
 void Catridge_All_Tx()
 {
-	Main_Tx_1Data(CMD_HP1_CART_ID, m_hd1.catridgeId);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_MANUFAC_YY, m_hd1.manufacYY);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_MANUFAC_MM, m_hd1.manufacMM);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_MANUFAC_DD, m_hd1.manufacDD);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_ISSUED_YY, m_hd1.issuedYY);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_ISSUED_MM, m_hd1.issuedMM);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_ISSUED_DD, m_hd1.issuedDD);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_REMIND_SHOT, m_hd1.remainingShotNum);
-	HAL_Delay(delTx);
-	Main_Tx_1Data(CMD_HP1_CATRIDGE_STATUS, m_hd1.catridgeStatus);
-	HAL_Delay(delTx);
+	HAL_Delay(500);
+	tt1 = HAL_GetTick();
+	Main_Tx_1Data(CMD_CART_ID, m_hd1.catridgeId);
+	Main_Tx_1Data(CMD_MANUFAC_YY, m_hd1.manufacYY);
+	Main_Tx_1Data(CMD_MANUFAC_MM, m_hd1.manufacMM);
+	Main_Tx_1Data(CMD_MANUFAC_DD, m_hd1.manufacDD);
+	Main_Tx_1Data(CMD_ISSUED_YY, m_hd1.issuedYY);
+	Main_Tx_1Data(CMD_ISSUED_MM, m_hd1.issuedMM);
+	Main_Tx_1Data(CMD_ISSUED_DD, m_hd1.issuedDD);
+
+
+	for(int i =1 ;i <= 7;i++)
+	{
+		Main_Tx_1Data(CMD_TRANDU_FRQ_BASE+i, m_hd1.rfFrqBuff[i]);
+	}
+
+//	for(int i =1 ;i <= 77;i++)
+//	{
+//		Main_Tx_1Data(CMD_TRANDU_WATT_BASE+i, m_hd1.rfWattBuff[i]);
+//	}
+
+	Main_Tx_1Data(CMD_REMIND_SHOT, m_hd1.remainingShotNum);
+	Main_Tx_1Data(CMD_CATRIDGE_STATUS, m_hd1.catridgeStatus);
+
+	Main_Tx_1Data(CMD_GET_ALL_CART_END, 0);//END
+	HAL_Delay(100);
+	tt2 = HAL_GetTick() - tt1;
+
+}
+void Catridge_Detect_Button()
+{
+	static uint32_t timeStamp;
+
+	if(HAL_GetTick()-timeStamp >= 100)
+	{
+		timeStamp = HAL_GetTick();
+		if(IS_HP1_SHOT_PUSH())
+		{
+			m_hd1.catridgeDetect = 1;
+		}
+		else
+		{
+			m_hd1.catridgeDetect = 0;
+		}
+	}
 
 }
 void Catridge_Detect_Event()
@@ -82,7 +117,7 @@ void Catridge_Detect_Event()
 	static uint8_t step = STEP0;
 	static uint32_t timeStamp;
 
-
+	Catridge_Detect_Button();
 
 	if(m_hd1.catridgeDetect)
 	{
@@ -90,8 +125,9 @@ void Catridge_Detect_Event()
 		{
 			HAL_Delay(100); // wate for eeprom wake up
 			Eeprom_All_Read();
-			Main_Tx_1Data(CMD_HP1_CATRIDGE_EVENT, CATRIGE_DETECT);
-			Catridge_All_Tx();
+//			Catridge_All_Tx();
+			Main_Tx_1Data(CMD_CATRIDGE_EVENT, CATRIGE_DETECT);
+			m_hd1.detectOnCnt++;
 		}
 		m_hd1.catridgeAcction = 1;
 	}
@@ -99,7 +135,8 @@ void Catridge_Detect_Event()
 	{
 		if(m_hd1.catridgeAcction==1)
 		{
-			Main_Tx_1Data(CMD_HP1_CATRIDGE_EVENT, CATRIGE_UN_DETECT);
+			Main_Tx_1Data(CMD_CATRIDGE_EVENT, CATRIGE_UN_DETECT);
+			m_hd1.detectOffCnt++;
 		}
 		m_hd1.catridgeAcction = 0;
 	}
@@ -113,13 +150,13 @@ void UartRx1DataProcess()
 	uint16_t valueTd, valueWatt;
 	if(rxCmd !=0)
 	{
-		switch (rxCmd)
-		{
-			case CMD_HP1_TEST_IO:
-				m_hd1.catridgeDetect = rxData;
-				m_hd1.catridgeAcction = 0;
-			break;
-		}
+//		switch (rxCmd)
+//		{
+//			case CMD_HP1_TEST_IO:
+//				m_hd1.catridgeDetect = rxData;
+//				m_hd1.catridgeAcction = 0;
+//			break;
+//		}
 		m_uart1.rxCmdAdd = 0;
 		m_uart1.rxCmdData = 0;
 	}
@@ -140,24 +177,19 @@ void UartRx2DataProcess()
 			case CMD_HP1_ADD:
 				switch (rxData)
 				{
-					case CMD_HP1_COOL_MAX:
+					case CMD_HP1_COOL_CTRL:
 						m_hd1.step = STEP1;
 					break;
-
-					case CMD_HP1_COOL_CTRL:
-						m_hd1.step = STEP2;
-					break;
-
 					case CMD_HP1_COOL_OFF:
-						m_hd1.step = STEP3;
+						m_hd1.step = STEP2;
 					break;
 				}
 			break;
 
-			case CMD_HP1_CART_ID:
+			case CMD_CART_ID:
 				if(rxData == REQ_DATA)
 				{
-					Main_Tx_1Data(CMD_HP1_CART_ID, m_hd1.catridgeId);
+					Main_Tx_1Data(CMD_CART_ID, m_hd1.catridgeId);
 				}
 				else
 				{
@@ -166,40 +198,40 @@ void UartRx2DataProcess()
 				}
 			break;
 
-			case CMD_HP1_MANUFAC_YY:
+			case CMD_MANUFAC_YY:
 				m_hd1.manufacYY = rxData;
 				Eeprom_Byte_Write(IDX_HP1_MANUFAC_YY_START, rxData);
 			break;
 
-			case CMD_HP1_MANUFAC_MM:
+			case CMD_MANUFAC_MM:
 				m_hd1.manufacMM = rxData;
 				Eeprom_Byte_Write(IDX_HP1_MANUFAC_MM_START, rxData);
 			break;
 
-			case CMD_HP1_MANUFAC_DD:
+			case CMD_MANUFAC_DD:
 				m_hd1.manufacDD = rxData;
 				Eeprom_Byte_Write(IDX_HP1_MANUFAC_DD_START, rxData);
 			break;
 
-			case CMD_HP1_ISSUED_YY:
+			case CMD_ISSUED_YY:
 				m_hd1.issuedYY = rxData;
 				Eeprom_Byte_Write(IDX_HP1_ISSUED_YY_START, rxData);
 			break;
 
-			case CMD_HP1_ISSUED_MM:
+			case CMD_ISSUED_MM:
 				m_hd1.issuedMM = rxData;
 				Eeprom_Byte_Write(IDX_HP1_ISSUED_MM_START, rxData);
 			break;
 
-			case CMD_HP1_ISSUED_DD:
+			case CMD_ISSUED_DD:
 				m_hd1.issuedDD = rxData;
 				Eeprom_Byte_Write(IDX_HP1_ISSUED_DD_START, rxData);
 			break;
 
-			case CMD_HP1_REMIND_SHOT:
+			case CMD_REMIND_SHOT:
 				if(rxData == REQ_DATA)
 				{
-					Main_Tx_1Data(CMD_HP1_REMIND_SHOT, m_hd1.remainingShotNum);
+					Main_Tx_1Data(CMD_REMIND_SHOT, m_hd1.remainingShotNum);
 				}
 				else
 				{
@@ -209,17 +241,17 @@ void UartRx2DataProcess()
 				}
 			break;
 
-			case CMD_HP1_DAY_REQ:
-				Main_Tx_1Data(CMD_HP1_MANUFAC_YY, m_hd1.manufacYY);
-				Main_Tx_1Data(CMD_HP1_MANUFAC_MM, m_hd1.manufacMM);
-				Main_Tx_1Data(CMD_HP1_MANUFAC_DD, m_hd1.manufacDD);
+			case CMD_DAY_REQ:
+				Main_Tx_1Data(CMD_MANUFAC_YY, m_hd1.manufacYY);
+				Main_Tx_1Data(CMD_MANUFAC_MM, m_hd1.manufacMM);
+				Main_Tx_1Data(CMD_MANUFAC_DD, m_hd1.manufacDD);
 
-				Main_Tx_1Data(CMD_HP1_ISSUED_YY, m_hd1.issuedYY);
-				Main_Tx_1Data(CMD_HP1_ISSUED_MM, m_hd1.issuedMM);
-				Main_Tx_1Data(CMD_HP1_ISSUED_DD, m_hd1.issuedDD);
+				Main_Tx_1Data(CMD_ISSUED_YY, m_hd1.issuedYY);
+				Main_Tx_1Data(CMD_ISSUED_MM, m_hd1.issuedMM);
+				Main_Tx_1Data(CMD_ISSUED_DD, m_hd1.issuedDD);
 			break;
 
-			case CMD_HP1_WATT_REQ:
+			case CMD_WATT_REQ:
 				for(int i =1 ;i <= 77;i++)
 				{
 					Main_Tx_1Data(i+CMD_TRANDU_WATT_BASE, m_hd1.rfWattBuff[i]);
@@ -227,7 +259,7 @@ void UartRx2DataProcess()
 				}
 			break;
 
-			case CMD_HP1_FRQ_REQ:
+			case CMD_FRQ_REQ:
 				for(int i =1 ;i <= 7;i++)
 				{
 					Main_Tx_1Data(i+CMD_TRANDU_FRQ_BASE, m_hd1.rfFrqBuff[i]);
@@ -235,10 +267,10 @@ void UartRx2DataProcess()
 				}
 			break;
 
-			case CMD_HP1_CATRIDGE_STATUS:
+			case CMD_CATRIDGE_STATUS:
 				if(rxData == REQ_DATA)
 				{
-					Main_Tx_1Data(CMD_HP1_CATRIDGE_STATUS, m_hd1.catridgeStatus);
+					Main_Tx_1Data(CMD_CATRIDGE_STATUS, m_hd1.catridgeStatus);
 				}
 				else
 				{
@@ -248,6 +280,21 @@ void UartRx2DataProcess()
 
 				}
 			break;
+
+			case CMD_DO_ALL_LIVE:
+				m_hd1.liveChkCnt++;
+				Main_Tx_1Data(CMD_DO_ALL_LIVE, 0);
+			break;
+
+			case CMD_GET_ALL_CART:
+				Catridge_All_Tx();
+			break;
+
+			case CMD_GET_ALL_CART_END:
+				m_hd1.cartAllSend = 1;
+			break;
+
+
 
 
 			default:
@@ -276,58 +323,50 @@ void UartRx2DataProcess()
 	}
 }
 
+
+void Pwm_Duty_Ctrl(uint32_t pwmDuty)
+{
+	Pwm_DutySet_Tim1_CH4(pwmDuty);
+	m_hd1.pwmDuty = pwmDuty/100;
+
+}
 void HP1_Temp_Duty_Ctrl()
 {
 	switch (m_hd1.step)
 	{
+
 		case STEP0:
 
 		break;
 
 		case STEP1:
+			if(adcChBuff[4] <= 68)
+			{
+				Pwm_Duty_Ctrl(0);
+			}
+			else if(adcChBuff[4] == 69)
+			{
+				Pwm_Duty_Ctrl(0);
+			}
+			else if(adcChBuff[4] == 70)
+			{
+				Pwm_Duty_Ctrl(1000);
+			}
+			else if(adcChBuff[4] == 71)
+			{
+				Pwm_Duty_Ctrl(5000);
+			}
+			else if(adcChBuff[4] >= 72)
+			{
+				Pwm_Duty_Ctrl(10000);
+			}
 
-			Pwm_DutySet_Tim1_CH4(10000);
-			m_hd1.pwmDuty = 100;
-			m_hd1.step = STEP0;
 			m_hd1.mode = STEP1;
-
 		break;
 
 		case STEP2:
-			if(adcChBuff[0] <= 68)
-			{
-				Pwm_DutySet_Tim1_CH4(0);
-				m_hd1.pwmDuty = 0;
-			}
-			else if(adcChBuff[0] == 69)
-			{
-				Pwm_DutySet_Tim1_CH4(0);
-				m_hd1.pwmDuty = 0;
-			}
-			else if(adcChBuff[0] == 70)
-			{
-				Pwm_DutySet_Tim1_CH4(1000);
-				m_hd1.pwmDuty = 10;
-			}
-			else if(adcChBuff[0] == 71)
-			{
-				Pwm_DutySet_Tim1_CH4(5000);
-				m_hd1.pwmDuty = 50;
-			}
-			else if(adcChBuff[0] >= 72)
-			{
-				Pwm_DutySet_Tim1_CH4(10000);
-				m_hd1.pwmDuty = 100;
-			}
-
+			Pwm_Duty_Ctrl(0);
 			m_hd1.mode = STEP2;
-		break;
-
-		case STEP3:
-			Pwm_DutySet_Tim1_CH4(0);
-			m_hd1.pwmDuty = 0;
-			m_hd1.step = STEP0;
-			m_hd1.mode = STEP3;
 		break;
 	}
 

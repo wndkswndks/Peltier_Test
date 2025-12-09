@@ -15,6 +15,7 @@
 
 
 /*  			define start  			*/
+#define IS_HP1_SHOT_PUSH()         (HAL_GPIO_ReadPin(CAT_DET_GPIO_Port, CAT_DET_Pin) == 0)
 
 /*  			define end  			*/
 
@@ -22,26 +23,74 @@
 /*  			enum start  			*/
 typedef enum
 {
-	CMD_HP1_ADD = 200,
-	CMD_HP1_REMIND_SHOT  = 7,
-	CMD_HP1_TEST_IO = 10,
-	CMD_HP1_CART_ID  = 35,
-	CMD_HP1_MANUFAC_YY  = 36,
-	CMD_HP1_MANUFAC_MM  = 37,
-	CMD_HP1_MANUFAC_DD  = 38,
-	CMD_HP1_ISSUED_YY  = 39,
-	CMD_HP1_ISSUED_MM  = 40,
-	CMD_HP1_ISSUED_DD  = 41,
-	CMD_HP1_DUMY1  = 42,
-	CMD_HP1_DAY_REQ  = 43,
-	CMD_HP1_WATT_REQ  = 44,
-	CMD_HP1_FRQ_REQ  = 45,
-	CMD_HP1_CATRIDGE_STATUS  = 46,
-	CMD_HP1_CATRIDGE_EVENT= 47,
 
-	CMD_HP1_DOYOU_LIVE = 70,
+	CMD_DUMY = 0,
+	CMD_ENERGY	=	1,
+	CMD_PULSE_DURATION = 2,
+	CMD_POST_COOLING = 3,
+	CMD_INTERVAL = 4,
+	CMD_CURRENT_SHOT = 5,
+	CMD_TOTAL_JOULE = 6,
+	CMD_REMIND_SHOT = 7,
+	CMD_TEMPERATURE_SHOT  = 8,
+	CMD_XXXX ,
 
-	CMD_TRANDU_FRQ_BASE = 90,//LCD_TX, MAIN_TX, LCD_REQ//~~~
+	CMD_FRQ_CH0	= 10,
+	CMD_FRQ_CH1,
+	CMD_FRQ_CH2,
+	CMD_FRQ_CH3,
+	CMD_FRQ_CH4,
+	CMD_FRQ_CH5,
+	CMD_FRQ_CH6	= 16,
+
+	CMD_WATT_CH0	= 17,
+	CMD_WATT_CH1,
+	CMD_WATT_CH2,
+	CMD_WATT_CH3,
+	CMD_WATT_CH4,
+	CMD_WATT_CH5,
+	CMD_WATT_CH6	= 23,
+
+	CMD_CAIV_DURATION = 30,
+
+	CMD_ERR = 31,
+	CMD_ALRAM = 32,
+	CMD_INFO = 33,
+	CMD_OK = 34,
+
+	CMD_CART_ID  = 35,
+	CMD_MANUFAC_YY = 36,
+	CMD_MANUFAC_MM = 37,
+	CMD_MANUFAC_DD = 38,
+	CMD_ISSUED_YY = 39,
+	CMD_ISSUED_MM = 40,
+	CMD_ISSUED_DD = 41,
+	CMD_DAY_REQ = 42,
+	CMD_RTC = 43,
+	CMD_RTC_YY = 44,
+	CMD_RTC_MM = 45,
+	CMD_RTC_DD = 46,
+	CMD_RTC_HOUR = 47,
+	CMD_RTC_MIN = 48,
+	CMD_RTC_SEC = 49,
+
+	CMD_CATRIDGE_STATUS    = 56,
+	CMD_CATRIDGE_EVENT= 57,
+	CMD_FRQ_REQ = 58,
+	CMD_WATT_REQ = 59,
+
+	CMD_LCD_STATUS = 60,
+	CMD_SYS_CHK = 61,
+	CMD_TRET_READY_OK = 62,
+
+	CMD_DO_ALL_LIVE = 70,
+	CMD_GET_ALL_CART = 71,
+	CMD_GET_ALL_CART_END = 72,
+
+	CMD_LCD_EXP = 85,
+	CMD_LCD_AUTO_CAL = 87,
+
+	CMD_TRANDU_FRQ_BASE = 90,
 	CMD_TRANDU1_FRQ = 91,
 	CMD_TRANDU2_FRQ = 92,
 	CMD_TRANDU3_FRQ = 93,
@@ -50,7 +99,7 @@ typedef enum
 	CMD_TRANDU6_FRQ = 96,
 	CMD_TRANDU7_FRQ = 97,
 
-	CMD_TRANDU_WATT_BASE	= 100,//LCD_TX, MAIN_TX, LCD_REQ//~~~
+	CMD_TRANDU_WATT_BASE	= 100,
 	// TRANDU1
 	CMD_TRANDU1_WATT10	= 101,
 	CMD_TRANDU1_WATT09	= 102,
@@ -141,18 +190,19 @@ typedef enum
 	CMD_TRANDU7_WATT02	= 175,
 	CMD_TRANDU7_WATT01	= 176,
 	CMD_TRANDU7_WATT005 = 177,
+
+	CMD_HP1_ADD = 200,
 } HD1_CMD_E;
 
 typedef enum
 {
-	CMD_HP1_COOL_MAX = 1,
-	CMD_HP1_COOL_CTRL = 2,
-	CMD_HP1_COOL_OFF = 3,
+	CMD_HP1_COOL_CTRL = 1,
+	CMD_HP1_COOL_OFF = 2,
 
 	REQ_DATA = 0xffff,
 
-	CATRIGE_UN_DETECT = 0,
-	CATRIGE_DETECT = 1,
+	CATRIGE_DETECT = 0,
+	CATRIGE_UN_DETECT = 1,
 
 	DEBUG_RX = 0,
 	DEBUG_TX = 1,
@@ -175,14 +225,18 @@ typedef struct
 	uint16_t rfFrqBuff[8];
 	uint16_t rfWattBuff[78];
 	uint16_t remainingShotNum;
-	uint8_t catridgeStatus;
+	uint16_t catridgeStatus;
 	uint8_t step;
 	uint8_t mode;
 	uint8_t pwmDuty;
 	uint8_t flashFirst;
 	uint8_t catridgeDetect;
 	uint8_t catridgeAcction;
-
+	uint16_t detectOnCnt;
+	uint16_t detectOffCnt;
+	uint32_t lastHPTxTime;
+	uint8_t liveChkCnt;
+	uint8_t cartAllSend;
 } HD1_T;
 
 /*  			stuct end  				*/

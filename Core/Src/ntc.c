@@ -24,14 +24,7 @@
 /* ========= 테이블(저항→온도) =========
    주어진 값(Ω, °C). 저항은 온도 증가에 따라 감소(NTC).
 */
-typedef struct { float r_ohm; float t_c; } rt_pair_t;
- const rt_pair_t rt_table[] = {
-    { 28220.0f,  0.0f },
-    { 18270.0f, 10.0f },
-    { 12150.0f, 20.0f },
-    {  8282.0f, 30.0f }
-};
-#define RT_TABLE_COUNT  (sizeof(rt_table)/sizeof(rt_table[0]))
+
 
 
 /* ========= 변환: ADC → 저항 =========
@@ -58,12 +51,13 @@ typedef struct { float r_ohm; float t_c; } rt_pair_t;
 
 
 
- uint32_t adcChNum,adcChBuff[10];
+ uint32_t adcChNum,adcChBuff[11];
 uint16_t rawADCbuff[11];
 
 /* ========= ADC 구동 ========= */
  uint16_t ADC1_ReadOnce(void)
 {
+
     adcChNum++;
 	if(adcChNum==2)
 	{
@@ -77,6 +71,7 @@ uint16_t rawADCbuff[11];
     uint16_t v = (uint16_t)HAL_ADC_GetValue(&hadc1);
     HAL_ADC_Stop(&hadc1);
 	rawADCbuff[adcChNum] = v;
+
 
     return v;
 }
@@ -719,7 +714,7 @@ void AutoCal_Temp(uint8_t ch)
 
 	if(ch==7)return;
 
-	tempTerm = adcChBuff[7]- adcChBuff[ch];
+	tempTerm = adcChBuff[4]- adcChBuff[ch];
 	if(tempTerm>=3)
 	{
 		nowTempPoint = adcChBuff[ch];
@@ -734,57 +729,65 @@ void AutoCal_Temp(uint8_t ch)
 uint32_t ntcTemp;
 uint8_t calFlag;
 uint8_t calEn;
+uint8_t tempGapPrint;
 
-int TempCal(uint32_t R)
+int NTC_Temp_Table_Caliv(uint32_t R)
 {
-	static uint8_t startNoise = 1;
 	static uint32_t timeStamp;
 	static uint8_t step = STEP0;
-	static uint32_t delCnt =0;
 	uint32_t adcFilter;
-	switch (step)
-	{
-		case STEP0:
-			for(int i =0 ;i < 300;i++) // 로우패스필터 안정화
-			{
-				if(tempTable[i][1] <R)
-				{
-					ntcTemp = tempTable[i][0];
-					adcFilter  = Low_Pass_Filter_Ch(ntcTemp, adcChNum);
-					adcChBuff[adcChNum] = adcFilter-15;
-					break;
-				}
-			}
-		if(calEn) step = STEP1;
-		break;
+	uint8_t len;
+	uint8_t str[40];
+	int idata;
 
-		case STEP1:
-			for(int i =0 ;i < 300;i++)
-			{
-				if(tempTable[i][1] <R)
-				{
-					ntcTemp = tempTable[i][0];
-					adcFilter  = Low_Pass_Filter_Ch(ntcTemp, adcChNum);
 
-					adcChBuff[adcChNum] = adcFilter;
+
+		for(int i =0 ;i < 300;i++)
+		{
+			if(tempTable[i][1] <R)
+			{
+				ntcTemp = tempTable[i][0];
+				adcFilter = Low_Pass_Filter_Ch(ntcTemp, adcChNum);
+				adcChBuff[adcChNum] = adcFilter-15;
+
+				if(calEn)
+				{
 					if(calFlag)adcChBuff[adcChNum] += tempTableCal[adcChNum][i];
 					else AutoCal_Temp(adcChNum);
-
-					break;
 				}
+				break;
 			}
+		}
 
-			int idata;
+		if(calEn)
+		{
+
 			idata = adcChBuff[adcChNum];
-			printf("%d ",idata);
+			len = sprintf(str,"%d ",idata);
+			HAL_UART_Transmit(&huart2,str,len,100);
 
-			if(adcChNum==9) printf("\r\n");
+			if(adcChNum==9)
+			{
+				HAL_UART_Transmit(&huart2,"\r\n",2,100);
+			}
+		}
+		if(tempGapPrint)
+		{
+			tempGapPrint = 0;
+			for(int i =0 ;i < 10;i++)
+			{
+				for(int j =0 ;j <= 300;j++)
+				{
+					idata = tempTableCal[i][j];
+					len = sprintf(str,"%d\r\n",idata);
+					HAL_UART_Transmit(&huart2,str,len,100);
 
-			if(calEn==0)step = STEP0;
-		break;
 
-	}
-
+				}
+				HAL_UART_Transmit(&huart2,"\r\n",2,100);
+				HAL_UART_Transmit(&huart2,"\r\n",2,100);
+			}
+		}
 
 
 }
@@ -792,14 +795,19 @@ uint32_t R_Ntc;
 
 void NTC_TempWhile()
 {
-	uint16_t raw = ADC1_ReadOnce();
-	float r_ntc = 0.0f;
+	static uint32_t timeStamp;
 
-	NTC_AdcToResistance(raw, &r_ntc);
+	if(HAL_GetTick()-timeStamp >= 30)
+	{
+		uint16_t raw = ADC1_ReadOnce();
+		float r_ntc = 0.0f;
 
-	R_Ntc = r_ntc;
-	TempCal(R_Ntc);
-	HAL_Delay(30);
+		NTC_AdcToResistance(raw, &r_ntc);
+
+		R_Ntc = r_ntc;
+		NTC_Temp_Table_Caliv(R_Ntc);
+		timeStamp = HAL_GetTick();
+	}
 
 
 }
