@@ -809,6 +809,7 @@ void NTC_TempWhile()
 		timeStamp = HAL_GetTick();
 	}
 
+	PID_Ctrl();
 
 }
 

@@ -36,6 +36,17 @@ void Debug_MAIN_Printf(uint8_t rxtx, uint8_t cmd, uint16_t data)
 
 }
 
+extern float Kp,Ki;
+
+void Debug_Printf()
+{
+//	int data = adcChBuff[4];
+//	printf("%d\r\n",data);
+	int KPint = Kp;
+	int KIint = Ki*10;
+	printf("%u %d \r\n",adcChBuff[4], KIint);
+
+}
 void Main_Tx_1Data(int cmd, int data)
 {
 	uint8_t len;
@@ -48,6 +59,8 @@ void Main_Tx_1Data(int cmd, int data)
 	m_hd1.lastHPTxTime = HAL_GetTick();
 }
 
+extern float PIDoutput;
+
 void HP1_Cmd_Config()
 {
 	static uint32_t timeStamp;
@@ -56,8 +69,12 @@ void HP1_Cmd_Config()
 	{
 
 		timeStamp = HAL_GetTick();
-
-		Main_Tx_4Data(CMD_HP1_ADD, m_hd1.mode, m_hd1.pwmDuty, adcChBuff[4], m_hd1.catridgeStatus);
+		m_hd1.pwmDuty = PIDoutput;
+	#if 1
+	Main_Tx_4Data(CMD_HP1_ADD, m_hd1.mode, m_hd1.pwmDuty, adcChBuff[4], m_hd1.catridgeStatus);
+	#else
+		Debug_Printf();
+	#endif
 	}
 }
 
@@ -75,16 +92,17 @@ void Catridge_All_Tx()
 	Main_Tx_1Data(CMD_ISSUED_MM, m_hd1.issuedMM);
 	Main_Tx_1Data(CMD_ISSUED_DD, m_hd1.issuedDD);
 
-
+#if 0
 	for(int i =1 ;i <= 7;i++)
 	{
 		Main_Tx_1Data(CMD_TRANDU_FRQ_BASE+i, m_hd1.rfFrqBuff[i]);
 	}
 
-//	for(int i =1 ;i <= 77;i++)
-//	{
-//		Main_Tx_1Data(CMD_TRANDU_WATT_BASE+i, m_hd1.rfWattBuff[i]);
-//	}
+	for(int i =1 ;i <= 77;i++)
+	{
+		Main_Tx_1Data(CMD_TRANDU_WATT_BASE+i, m_hd1.rfWattBuff[i]);
+	}
+#endif
 
 	Main_Tx_1Data(CMD_REMIND_SHOT, m_hd1.remainingShotNum);
 	Main_Tx_1Data(CMD_CATRIDGE_STATUS, m_hd1.catridgeStatus);

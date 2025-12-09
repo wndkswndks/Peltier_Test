@@ -30,7 +30,7 @@ int putchar(int ch)
 #else
 int __io_putchar(int ch)
 {
-    while(HAL_OK != HAL_UART_Transmit(&huart1, (uint8_t *)&ch, 1,100))
+    while(HAL_OK != HAL_UART_Transmit(&huart2, (uint8_t *)&ch, 1,100))
 	{}
 	return ch;
 }

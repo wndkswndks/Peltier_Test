@@ -124,8 +124,8 @@ float integral;
 float derivative;
 
 #define PID_DT	0.5
-float Kp = 50.0f;  // ï¿½ï¿½ï¿?ï¿½Ìµï¿½, ï¿½Ê¿ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½
-float Ki = 0.0f;
+float Kp = 70.0f;  // ï¿½ï¿½ï¿?ï¿½Ìµï¿½, ï¿½Ê¿ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½
+float Ki = 0.6f;
 float Kd = 0.0f;
 
 void calculate_pid(float target_temp, float current_temp)
@@ -217,22 +217,37 @@ uint32_t Low_Pass_Filter_Ch(int X,uint8_t ch)
 float nowTemp;
 void PID_Ctrl()
 {
-	static uint32_t timeStamp;
-	int intTemp31855 = temp31855*10;//
-	int intTemp6675 = temp6675*10;
-	int intlowpass = adcChBuff[0];
-	int intTargetTemp = targetTemp*10;
-	int intPIDoutput = PIDoutput;
-	int intTick = timeStamp/1000;
-	int intKp = Kp;
-	if(HAL_GetTick()-timeStamp >= 500)
+	static uint32_t timeStamp, timeStamp2;
+	static uint8_t step = STEP0;
+	switch (step)
 	{
-		timeStamp = HAL_GetTick();
-		nowTemp = (float)adcChBuff[0]/10;
-		calculate_pid(targetTemp, nowTemp);
+		case STEP0:
+			if(adcChBuff[4]<80)
+			{
+				PIDoutput = 100;
+				PIDoutputCCR = PIDoutput*100;
+				Pwm_DutySet_Tim1_CH4(PIDoutputCCR);
+				step = STEP1;
+			}
+		break;
 
-//		printf("%d %d %d %d\r\n", intlowpass, intTargetTemp, intPIDoutput, intKp);
+		case STEP1:
+			if(HAL_GetTick()-timeStamp >= 500)
+			{
+				timeStamp = HAL_GetTick();
+				nowTemp = (float)adcChBuff[4]/10;
+				calculate_pid(targetTemp, nowTemp);
+			}
+		break;
 	}
+
+
+//	if(HAL_GetTick()-timeStamp2 >= 120000 && Ki<3)
+//	{
+//		integral = 0;
+//		Ki += 0.1;
+//		timeStamp2 = HAL_GetTick();
+//	}
 
 }
 
@@ -370,17 +385,17 @@ void Test_While()
 
 #if 0
 //	TxTest();
+//	HP1_Temp_Duty_Ctrl();
 
 #else
 	Force_Duty();
 	HP1_Cmd_Config();
-	HP1_Temp_Duty_Ctrl();
-	Catridge_Detect_Event();
 	NTC_TempWhile();
 	UartRxDataProcess();
 
 
 #endif
+	Catridge_Detect_Event();
 
 //	ddGpio(CAT_DET_GPIO_Port,CAT_DET_Pin,0);
 }
