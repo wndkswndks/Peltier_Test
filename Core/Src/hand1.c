@@ -69,7 +69,6 @@ void HP1_Cmd_Config()
 	{
 
 		timeStamp = HAL_GetTick();
-		m_hd1.pwmDuty = PIDoutput;
 	#if 1
 	Main_Tx_4Data(CMD_HP1_ADD, m_hd1.mode, m_hd1.pwmDuty, adcChBuff[4], m_hd1.catridgeStatus);
 	#else
@@ -346,47 +345,6 @@ void Pwm_Duty_Ctrl(uint32_t pwmDuty)
 {
 	Pwm_DutySet_Tim1_CH4(pwmDuty);
 	m_hd1.pwmDuty = pwmDuty/100;
-
-}
-void HP1_Temp_Duty_Ctrl()
-{
-	switch (m_hd1.step)
-	{
-
-		case STEP0:
-
-		break;
-
-		case STEP1:
-			if(adcChBuff[4] <= 68)
-			{
-				Pwm_Duty_Ctrl(0);
-			}
-			else if(adcChBuff[4] == 69)
-			{
-				Pwm_Duty_Ctrl(0);
-			}
-			else if(adcChBuff[4] == 70)
-			{
-				Pwm_Duty_Ctrl(1000);
-			}
-			else if(adcChBuff[4] == 71)
-			{
-				Pwm_Duty_Ctrl(5000);
-			}
-			else if(adcChBuff[4] >= 72)
-			{
-				Pwm_Duty_Ctrl(10000);
-			}
-
-			m_hd1.mode = STEP1;
-		break;
-
-		case STEP2:
-			Pwm_Duty_Ctrl(0);
-			m_hd1.mode = STEP2;
-		break;
-	}
 
 }
 

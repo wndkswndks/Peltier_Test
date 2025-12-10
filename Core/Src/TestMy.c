@@ -148,43 +148,14 @@ void calculate_pid(float target_temp, float current_temp)
 	{
 		PIDoutput =0;
 		PIDoutputCCR = 0;
-		Pwm_DutySet_Tim1_CH4(0);
+		Pwm_Duty_Ctrl(PIDoutputCCR);
 
 	}
 	else
 	{
 		PIDoutputCCR = PIDoutput*100;
-		Pwm_DutySet_Tim1_CH4(PIDoutputCCR);
+		Pwm_Duty_Ctrl(PIDoutputCCR);
 	}
-
-}
-
-
-void calculate_p_pwm(float target_temp, float current_temp) {
-
-    PIDerror = current_temp - target_temp;
-
-	if(PIDerror>0) // 목표보다 뜨거우면 가동
-	{
-	    PIDoutput = Kp * PIDerror;
-
-	    if (PIDoutput > 100.0f)
-	        PIDoutput = 100.0f;
-	    else if (PIDoutput < 0.0f)
-	        PIDoutput = 0.0f;
-
-	}
-	else if(PIDerror<0)
-	{
-		PIDoutput = 0.0f;
-	}
-	else if(PIDerror==0)
-	{
-		//
-	}
-
-	PIDoutputCCR = PIDoutput*100;
-	Pwm_DutySet_Tim1_CH4(PIDoutputCCR);
 
 }
 
@@ -227,37 +198,51 @@ uint32_t Low_Pass_Filter_Ch(int X,uint8_t ch)
 float nowTemp;
 void PID_Ctrl()
 {
-	static uint32_t timeStamp, timeStamp2;
-	static uint8_t step = STEP0;
-	switch (step)
-	{
-		case STEP0:
-			if(adcChBuff[4]<80)
-			{
-				PIDoutput = 100;
-				PIDoutputCCR = PIDoutput*100;
-				Pwm_DutySet_Tim1_CH4(PIDoutputCCR);
-				step = STEP1;
-			}
-		break;
+	static uint32_t timeStamp;
 
+	switch (m_hd1.step)
+	{
 		case STEP1:
 			if(HAL_GetTick()-timeStamp >= 500)
 			{
-				timeStamp = HAL_GetTick();
 				nowTemp = (float)adcChBuff[4]/10;
-				calculate_pid(targetTemp, nowTemp);
+
+				if(nowTemp>25)
+				{
+					Pwm_Duty_Ctrl(0);
+				}
+				else if(10 < nowTemp && nowTemp<= 25)
+				{
+					Pwm_Duty_Ctrl(100);
+				}
+				else if(6 < nowTemp && nowTemp<= 10)
+				{
+					calculate_pid(targetTemp, nowTemp);
+				}
+				else
+				{
+					Pwm_Duty_Ctrl(0);
+				}
+				timeStamp = HAL_GetTick();
 			}
+
+		break;
+
+		case STEP2:
+			Pwm_Duty_Ctrl(0);
 		break;
 	}
 
 
-//	if(HAL_GetTick()-timeStamp2 >= 120000 && Ki<3)
-//	{
-//		integral = 0;
-//		Ki += 0.1;
-//		timeStamp2 = HAL_GetTick();
-//	}
+
+#if 0
+	if(HAL_GetTick()-timeStamp2 >= 120000 && Ki<3)
+	{
+		integral = 0;
+		Ki += 0.1;
+		timeStamp2 = HAL_GetTick();
+	}
+#endif
 
 }
 
@@ -401,8 +386,8 @@ void Test_While()
 	Force_Duty();
 	HP1_Cmd_Config();
 	NTC_TempWhile();
-	UartRxDataProcess();
 	Catridge_Detect_Event();
+	UartRxDataProcess();
 
 
 #endif

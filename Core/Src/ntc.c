@@ -808,8 +808,8 @@ void NTC_TempWhile()
 		NTC_Temp_Table_Caliv(R_Ntc);
 		timeStamp = HAL_GetTick();
 	}
-
 	PID_Ctrl();
+
 
 }
 

@@ -244,7 +244,6 @@ typedef struct
 
 
 /*  			function start  		*/
-void HP1_Temp_Duty_Ctrl();
 void UartRx1DataProcess();
 void Main_Tx_4Data(int cmd, int data1, int data2, int data3, int data4);
 void Main_Tx_1Data(int cmd, int data);
