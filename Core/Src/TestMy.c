@@ -207,21 +207,14 @@ void PID_Ctrl()
 			{
 				nowTemp = (float)adcChBuff[4]/10;
 
+
 				if(nowTemp>25)
 				{
 					Pwm_Duty_Ctrl(0);
 				}
-				else if(10 < nowTemp && nowTemp<= 25)
-				{
-					Pwm_Duty_Ctrl(100);
-				}
-				else if(6 < nowTemp && nowTemp<= 10)
-				{
-					calculate_pid(targetTemp, nowTemp);
-				}
 				else
 				{
-					Pwm_Duty_Ctrl(0);
+					calculate_pid(targetTemp, nowTemp);
 				}
 				timeStamp = HAL_GetTick();
 			}

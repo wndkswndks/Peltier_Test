@@ -300,6 +300,7 @@ void UartRx2DataProcess()
 
 			case CMD_DO_ALL_LIVE:
 				m_hd1.liveChkCnt++;
+				m_hd1.cartAllSend = 0;
 				Main_Tx_1Data(CMD_DO_ALL_LIVE, 0);
 			break;
 
