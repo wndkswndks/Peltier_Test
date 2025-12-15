@@ -111,6 +111,28 @@ void Catridge_All_Tx()
 	tt2 = HAL_GetTick() - tt1;
 
 }
+
+void Watt_All_Tx()
+{
+	HAL_Delay(500);
+	tt1 = HAL_GetTick();
+
+#if 1
+
+	for(int i =1 ;i <= 77;i++)
+	{
+		Main_Tx_1Data(CMD_TRANDU_WATT_BASE+i, m_hd1.rfWattBuff[i]);
+	}
+#endif
+
+
+	Main_Tx_1Data(CMD_GET_WATT_CART, 1);//END
+	HAL_Delay(100);
+	tt2 = HAL_GetTick() - tt1;
+
+}
+
+
 void Catridge_Detect_Button()
 {
 	static uint32_t timeStamp;
@@ -312,6 +334,9 @@ void UartRx2DataProcess()
 				m_hd1.cartAllSend = 1;
 			break;
 
+			case CMD_GET_WATT_CART:
+				 Watt_All_Tx();
+			break;
 
 
 
