@@ -208,9 +208,9 @@ void PID_Ctrl()
 				nowTemp = (float)adcChBuff[4]/10;
 
 
-				if(nowTemp>25)
+				if(nowTemp>26)
 				{
-					Pwm_Duty_Ctrl(0);
+					m_hd1.step = STEP2;
 				}
 				else
 				{

@@ -56,7 +56,7 @@ typedef enum
 	 CMD_PLUSE_VALUE	 = 27,
 	 CMD_CURRENT_JOULE = 28,
 
-	 CMD_CAIV_DURATION = 30,
+	 CMD_CALIV_SHOT = 30,
 
 	 CMD_ERR = 31,
 	 CMD_ALRAM = 32,
@@ -86,7 +86,6 @@ typedef enum
 
 	 CMD_LCD_STATUS = 60,
 	 CMD_SYS_CHK = 61,
-	 CMD_TRET_READY_OK = 62,
 
 	 CMD_DO_ALL_LIVE = 70,
 	 CMD_GET_ALL_CART = 71,
