@@ -164,6 +164,8 @@ void Test_Init()
 	Pwm_Init();
 //	HAL_Delay(2000);
 //	Pwm_DutySet_Tim1_CH4(10000);
+//	Pwm_Duty_Ctrl(10000);
+
 	m_hd1.step = STEP1;
 
 
@@ -208,9 +210,10 @@ void PID_Ctrl()
 				nowTemp = (float)adcChBuff[4]/10;
 
 
-				if(nowTemp>26)
+				if(nowTemp>28)
 				{
 					m_hd1.step = STEP2;
+					Pwm_Duty_Ctrl(0);
 				}
 				else
 				{
