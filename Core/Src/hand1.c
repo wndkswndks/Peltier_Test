@@ -36,17 +36,41 @@ void Debug_MAIN_Printf(uint8_t rxtx, uint8_t cmd, uint16_t data)
 
 }
 
-extern float Kp,Ki;
 
-void Debug_Printf()
+void Debug_Printf(int data)
 {
-//	int data = adcChBuff[4];
-//	printf("%d\r\n",data);
-	int KPint = Kp;
-	int KIint = Ki*10;
-	printf("%u %d \r\n",adcChBuff[4], KIint);
+	uint8_t len;
+	uint8_t str[40];
+
+	len = sprintf(str,"%d %d\r\n",m_hd1.shotCnt, data);
+
+	HAL_UART_Transmit(&huart1,str,len,100);
+}
+void Temp_Debug_Printf()
+{
+
+	uint8_t len;
+	uint8_t str[40];
+
+	if(m_hd1.shotStatus)
+	{
+		if(m_hd1.shotTempCnt<400)
+		{
+			m_hd1.shotTempCnt++;
+			Debug_Printf(adcChBuff[4]);
+		}
+		else
+		{
+			m_hd1.shotTempCnt = 0;
+			m_hd1.shotStatus = 0;
+		}
+
+	}
 
 }
+
+extern float Kp,Ki;
+
 void Main_Tx_1Data(int cmd, int data)
 {
 	uint8_t len;
@@ -279,6 +303,29 @@ void UartRx2DataProcess()
 
 				}
 			break;
+
+			case CMD_LCD_EXP:
+				if(rxData == 2)
+				{
+					//m_hd1.shotStatus = 0;
+//					Debug_Printf(444);
+				}
+				else if(rxData == 1)
+				{
+					m_hd1.shotStatus = 1;
+					m_hd1.shotTempCnt = 0;
+					m_hd1.shotCnt++;
+//					Debug_Printf(555);
+				}
+
+			break;
+
+			case CMD_PULSE_TRIGER:
+				Debug_Printf(rxData);
+			break;
+
+
+
 
 			case CMD_DAY_REQ:
 				Main_Tx_1Data(CMD_MANUFAC_YY, m_hd1.manufacYY);

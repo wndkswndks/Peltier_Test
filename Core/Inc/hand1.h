@@ -96,6 +96,7 @@ typedef enum
 
 	 CMD_LCD_EXP = 85,
 	 CMD_LCD_AUTO_CAL = 87,
+	 CMD_PULSE_TRIGER = 88,
 
 	 CMD_CAL_TEST = 188,
 	 CMD_CAL_TEST_ZERO = 189,
@@ -259,6 +260,9 @@ typedef struct
 	uint32_t lastHPTxTime;
 	uint8_t liveChkCnt;
 	uint8_t cartAllSend;
+	uint8_t shotStatus;
+	uint16_t shotTempCnt;
+	int shotCnt;
 } HD1_T;
 
 /*  			stuct end  				*/

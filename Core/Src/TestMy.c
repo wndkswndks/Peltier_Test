@@ -219,6 +219,7 @@ void PID_Ctrl()
 				{
 					calculate_pid(targetTemp, nowTemp);
 				}
+
 				timeStamp = HAL_GetTick();
 			}
 
@@ -384,6 +385,7 @@ void Test_While()
 	NTC_TempWhile();
 	Catridge_Detect_Event();
 	UartRxDataProcess();
+
 
 
 #endif
