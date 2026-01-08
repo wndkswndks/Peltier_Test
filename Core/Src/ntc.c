@@ -712,7 +712,7 @@ void AutoCal_Temp(uint8_t ch)
 	uint32_t nowTempPoint;
 	int tempTerm;
 
-	if(ch==7)return;
+	if(ch==4)return;
 
 	tempTerm = adcChBuff[4]- adcChBuff[ch];
 	if(tempTerm>=3)
