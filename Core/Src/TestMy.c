@@ -174,7 +174,7 @@ void Test_Init()
 float lowPassTemp,lowPassTempPre;
 float lowPassTempCh[10],lowPassTempPreCh[10];
 
-extern uint32_t adcChNum,adcChBuff[11];
+extern uint32_t adcChNum,adcChBuff[11],adcChAvg;
 
 uint32_t Low_Pass_Filter(int X)
 {
@@ -207,7 +207,7 @@ void PID_Ctrl()
 		case STEP1:
 			if(HAL_GetTick()-timeStamp >= 500)
 			{
-				nowTemp = (float)adcChBuff[4]/10;
+				nowTemp = (float)adcChAvg/10;
 
 
 				if(nowTemp>28)

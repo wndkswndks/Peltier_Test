@@ -8,7 +8,7 @@
 #include "hand1.h"
 
 HD1_T m_hd1;
-extern uint32_t adcChNum,adcChBuff[11];
+extern uint32_t adcChNum,adcChBuff[11], adcChAvg;
 
 
 
@@ -57,7 +57,7 @@ void Temp_Debug_Printf()
 		if(m_hd1.shotTempCnt<400)
 		{
 			m_hd1.shotTempCnt++;
-			Debug_Printf(adcChBuff[4]);
+			Debug_Printf(adcChAvg);
 		}
 		else
 		{
@@ -94,7 +94,7 @@ void HP1_Cmd_Config()
 
 		timeStamp = HAL_GetTick();
 	#if 1
-	Main_Tx_4Data(CMD_HP1_ADD, m_hd1.mode, m_hd1.pwmDuty, adcChBuff[4], m_hd1.catridgeStatus);
+	Main_Tx_4Data(CMD_HP1_ADD, m_hd1.mode, m_hd1.pwmDuty, adcChAvg, m_hd1.catridgeStatus);
 	#else
 		Debug_Printf();
 	#endif

@@ -51,7 +51,7 @@
 
 
 
- uint32_t adcChNum,adcChBuff[11];
+ uint32_t adcChNum,adcChBuff[11], adcChAvg;
 uint16_t rawADCbuff[11];
 
 /* ========= ADC ±¸µ¿ ========= */
@@ -749,7 +749,7 @@ int NTC_Temp_Table_Caliv(uint32_t R)
 				ntcTemp = tempTable[i][0];
 				adcFilter = Low_Pass_Filter_Ch(ntcTemp, adcChNum);
 				adcChBuff[adcChNum] = adcFilter-15;
-
+				adcChAvg = (adcChBuff[1] + adcChBuff[4] + adcChBuff[5] + adcChBuff[9])/4;
 				if(calEn)
 				{
 					if(calFlag)adcChBuff[adcChNum] += tempTableCal[adcChNum][i];
