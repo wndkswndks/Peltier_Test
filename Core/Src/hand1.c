@@ -135,6 +135,30 @@ void Catridge_All_Tx()
 	tt2 = HAL_GetTick() - tt1;
 
 }
+void Catridge_All_Zero()
+{
+	m_hd1.catridgeId = 0;
+	m_hd1.manufacYY = 0;
+	m_hd1.manufacMM = 0;
+	m_hd1.manufacDD = 0;
+	m_hd1.issuedYY = 0;
+	m_hd1.issuedMM = 0;
+	m_hd1.issuedDD = 0;
+
+	for(int i =1 ;i <= 7;i++)
+	{
+		m_hd1.rfFrqBuff[i] = 0;
+	}
+
+	for(int i =1 ;i <= 77;i++)
+	{
+		m_hd1.rfWattBuff[i] = 0;
+	}
+
+	m_hd1.remainingShotNum = 0;
+	m_hd1.catridgeStatus = 0;
+
+}
 
 void Watt_All_Tx()
 {
@@ -188,7 +212,7 @@ void Catridge_Detect_Event()
 		{
 			HAL_Delay(100); // wate for eeprom wake up
 			Eeprom_All_Read();
-//			Catridge_All_Tx();
+			Catridge_All_Tx();
 			Main_Tx_1Data(CMD_CATRIDGE_EVENT, CATRIGE_DETECT);
 			m_hd1.detectOnCnt++;
 		}
@@ -198,6 +222,8 @@ void Catridge_Detect_Event()
 	{
 		if(m_hd1.catridgeAcction==1)
 		{
+			Catridge_All_Zero();
+			Catridge_All_Tx();
 			Main_Tx_1Data(CMD_CATRIDGE_EVENT, CATRIGE_UN_DETECT);
 			m_hd1.detectOffCnt++;
 		}
