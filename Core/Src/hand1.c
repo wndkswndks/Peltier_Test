@@ -131,6 +131,7 @@ void Catridge_All_Tx()
 	Main_Tx_1Data(CMD_CATRIDGE_STATUS, m_hd1.catridgeStatus);
 
 	Main_Tx_1Data(CMD_GET_ALL_CART_END, 0);//END
+	Main_Tx_1Data(CMD_CART_ALLOW, 0);
 	HAL_Delay(100);
 	tt2 = HAL_GetTick() - tt1;
 
@@ -212,7 +213,8 @@ void Catridge_Detect_Event()
 		{
 			HAL_Delay(100); // wate for eeprom wake up
 			Eeprom_All_Read();
-			Catridge_All_Tx();
+			Main_Tx_1Data(CMD_CART_ID, m_hd1.catridgeId);
+			Main_Tx_1Data(CMD_REMIND_SHOT, m_hd1.remainingShotNum);
 			Main_Tx_1Data(CMD_CATRIDGE_EVENT, CATRIGE_DETECT);
 			m_hd1.detectOnCnt++;
 		}
@@ -329,6 +331,11 @@ void UartRx2DataProcess()
 
 				}
 			break;
+
+			case CMD_CART_ALLOW:
+				Catridge_All_Tx();
+			break;
+
 
 			case CMD_LCD_EXP:
 				if(rxData == 2)
