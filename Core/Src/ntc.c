@@ -793,7 +793,7 @@ int NTC_Temp_Table_Caliv(uint32_t R)
 }
 uint32_t R_Ntc;
 
-void NTC_TempWhile()
+void NTC_TempWhile()//
 {
 	static uint32_t timeStamp;
 
