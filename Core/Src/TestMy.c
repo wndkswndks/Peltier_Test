@@ -167,6 +167,7 @@ void Test_Init()
 //	Pwm_Duty_Ctrl(10000);
 
 	m_hd1.step = STEP1;
+	m_hd1.tempDutyEn = 1;
 
 
 }

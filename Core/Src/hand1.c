@@ -88,7 +88,7 @@ extern float PIDoutput;
 void HP1_Cmd_Config()
 {
 	static uint32_t timeStamp;
-	if(m_hd1.cartAllSend == 0)return;
+	if(m_hd1.tempDutyEn == 0)return;
 	if(HAL_GetTick()-timeStamp >= 1000)
 	{
 
@@ -130,7 +130,7 @@ void Catridge_All_Tx()
 	Main_Tx_1Data(CMD_REMIND_SHOT, m_hd1.remainingShotNum);
 	Main_Tx_1Data(CMD_CATRIDGE_STATUS, m_hd1.catridgeStatus);
 
-	Main_Tx_1Data(CMD_GET_ALL_CART_END, 0);//END
+	Main_Tx_1Data(CMD_GET_ALL_CART_END, 1);//END
 	Main_Tx_1Data(CMD_CART_ALLOW, 0);
 	HAL_Delay(100);
 	tt2 = HAL_GetTick() - tt1;
@@ -402,7 +402,6 @@ void UartRx2DataProcess()
 
 			case CMD_DO_ALL_LIVE:
 				m_hd1.liveChkCnt++;
-				m_hd1.cartAllSend = 0;
 				Main_Tx_1Data(CMD_DO_ALL_LIVE, 0);
 			break;
 
@@ -410,9 +409,10 @@ void UartRx2DataProcess()
 				Catridge_All_Tx();
 			break;
 
-			case CMD_GET_ALL_CART_END:
-				m_hd1.cartAllSend = 1;
+			case CMD_TEMP_DUTY_ON:
+				m_hd1.tempDutyEn = rxData;
 			break;
+
 
 			case CMD_GET_WATT_CART:
 				 Watt_All_Tx();

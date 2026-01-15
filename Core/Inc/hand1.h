@@ -96,6 +96,7 @@ typedef enum
 	CMD_TEST_PULSE = 73,
 	CMD_GET_WATT_CART = 74,
 	CMD_TEST_FORCE_PAGE_CHANGE = 75,
+	CMD_TEMP_DUTY_ON = 76,
 
 	CMD_LCD_EXP = 85,
 	CMD_LCD_AUTO_CAL = 87,
@@ -116,8 +117,6 @@ typedef enum
 	CMD_DEBUG_PUMP = 193,
 	CMD_DEBUG_CHILLER = 194,
 	CMD_DEBUG_PELTIER = 195,
-	CMD_DEGUG_TEMP_DUTY_ON = 196,
-	CMD_DEGUG_LCD_TEMP_DUTY_ON = 197,
 
 	CMD_HP1_ADD = 200,
 
@@ -269,7 +268,7 @@ typedef struct
 	uint16_t detectOffCnt;
 	uint32_t lastHPTxTime;
 	uint8_t liveChkCnt;
-	uint8_t cartAllSend;
+	uint8_t tempDutyEn;
 	uint8_t shotStatus;
 	uint16_t shotTempCnt;
 	int shotCnt;
