@@ -806,7 +806,7 @@ void NTC_TempWhile()//
 
 		R_Ntc = r_ntc;
 		NTC_Temp_Table_Caliv(R_Ntc);
-//		Temp_Debug_Printf();
+		Temp_Debug_Printf();
 		timeStamp = HAL_GetTick();
 	}
 	PID_Ctrl();
